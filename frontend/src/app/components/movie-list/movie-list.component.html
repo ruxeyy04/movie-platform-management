@@ -1,33 +1,41 @@
 <section class="netflix-browse">
     <!-- Hero Banner -->
-    <div class="hero-banner" *ngIf="!loading && !error && movies.length > 0">
+    <div class="hero-banner" *ngIf="!loading && !error && featuredMovies.length > 0">
         <div class="hero-content">
             <div class="container">
-                <div class="hero-details">
-                    <h1 class="hero-title">{{ movies[0].title }}</h1>
+                <div class="hero-details"
+                    [ngClass]="{'slide-in-left': slidingDirection === 'left' && animating, 'slide-in-right': slidingDirection === 'right' && animating}">
+                    <h1 class="hero-title">{{ getCurrentFeaturedMovie().title }}</h1>
                     <div class="hero-meta">
-                        <span class="hero-year">{{ movies[0].releaseYear }}</span>
-                        <span class="hero-rating">{{ movies[0].rating }}/10</span>
-                        <span class="hero-duration">{{ movies[0].duration }} min</span>
+                        <span class="hero-year">{{ getCurrentFeaturedMovie().releaseYear }}</span>
+                        <span class="hero-rating">{{ getCurrentFeaturedMovie().rating }}/10</span>
+                        <span class="hero-duration">{{ getCurrentFeaturedMovie().duration }} min</span>
                     </div>
-                    <p class="hero-description">{{ movies[0].description }}</p>
+                    <p class="hero-description">{{ getCurrentFeaturedMovie().description }}</p>
                     <div class="hero-genres">
-                        <span *ngFor="let genre of movies[0].genre" class="hero-genre-badge">{{ genre }}</span>
+                        <span *ngFor="let genre of getCurrentFeaturedMovie().genre" class="hero-genre-badge">{{ genre
+                            }}</span>
                     </div>
                     <div class="hero-actions">
-                        <a [routerLink]="['/movies', movies[0].id, 'play']" class="btn btn-netflix-play">
+                        <a [routerLink]="['/movies', getCurrentFeaturedMovie().id, 'play']"
+                            class="btn btn-netflix-play">
                             <i class="bi bi-play-fill"></i> Play
                         </a>
-                        <a [routerLink]="['/movies', movies[0].id]" class="btn btn-netflix-more">
+                        <a [routerLink]="['/movies', getCurrentFeaturedMovie().id]" class="btn btn-netflix-more">
                             <i class="bi bi-info-circle"></i> More Info
                         </a>
                     </div>
                 </div>
             </div>
             <div class="hero-overlay"></div>
-            <div class="hero-image" [style.background-image]="'url(' + movies[0].posterUrl + ')'"></div>
+            <div class="hero-image"
+                [ngClass]="{'slide-bg-left': slidingDirection === 'left' && animating, 'slide-bg-right': slidingDirection === 'right' && animating}"
+                [style.background-image]="'url(' + getCurrentFeaturedMovie().posterUrl + ')'"></div>
+
+
         </div>
     </div>
+
 
     <div class="container pb-5">
         <!-- Page Title and Add Button -->
