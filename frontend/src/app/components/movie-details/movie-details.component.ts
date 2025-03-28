@@ -89,4 +89,17 @@ export class MovieDetailsComponent implements OnInit {
       }
     });
   }
+
+  formatDate(dateString: string | Date | null): string {
+    if (!dateString) {
+      return 'Coming Soon';
+    }
+
+    const date = dateString instanceof Date ? dateString : new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
 }

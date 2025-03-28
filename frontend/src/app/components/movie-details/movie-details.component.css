@@ -76,6 +76,35 @@
   );
 }
 
+.netflix-back-button {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 16px;
+  z-index: 100;
+  transition: all 0.3s ease;
+  padding: 10px 18px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.netflix-back-button i {
+  font-size: 20px;
+}
+
+.netflix-back-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(-3px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Keep existing back-button for backward compatibility */
 .back-button {
   position: absolute;
   top: 20px;
@@ -340,6 +369,25 @@
 
   .rating-value {
     font-size: 1.2rem;
+  }
+
+  .netflix-back-button {
+    top: 20px;
+    left: 20px;
+    padding: 8px 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .netflix-back-button {
+    top: 15px;
+    left: 15px;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  .netflix-back-button i {
+    font-size: 18px;
   }
 }
 

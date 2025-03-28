@@ -25,10 +25,11 @@
         <!-- Hero Banner -->
         <div class="details-hero-banner" [style.background-image]="'url(' + movie.posterUrl + ')'">
             <div class="details-hero-overlay"></div>
+            <button (click)="goBack()" class="netflix-back-button">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Movies</span>
+            </button>
             <div class="container position-relative">
-                <button (click)="goBack()" class="back-button">
-                    <i class="bi bi-arrow-left"></i>
-                </button>
             </div>
         </div>
 
@@ -73,7 +74,7 @@
                                     }})</span></h1>
 
                             <div class="movie-metadata">
-                                <span class="release-date">{{ movie.releaseDate }}</span>
+                                <span class="release-date">{{ formatDate(movie.releaseDate) }}</span>
                                 <span class="separator">•</span>
                                 <span class="duration">{{ movie.duration }} min</span>
                                 <span class="separator">•</span>
@@ -104,11 +105,7 @@
                                         </tr>
                                         <tr>
                                             <td>Release Date</td>
-                                            <td>
-                                                <span *ngIf="movie.releaseDate">{{ movie.releaseDate }}</span>
-                                                <span *ngIf="!movie.releaseDate" class="coming-soon-label">Coming
-                                                    Soon</span>
-                                            </td>
+                                            <td>{{ formatDate(movie.releaseDate) }}</td>
                                         </tr>
                                         <tr>
                                             <td>Duration</td>

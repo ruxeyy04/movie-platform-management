@@ -3,7 +3,7 @@ export interface Movie {
     title: string;
     description: string;
     releaseYear: number;
-    releaseDate: Date;
+    releaseDate: Date | string | null;
     director: string;
     genre: string[];
     duration: number; // in minutes
