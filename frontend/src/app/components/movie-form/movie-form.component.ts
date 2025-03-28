@@ -6,14 +6,41 @@ import { MovieService } from '../../services/movie.service';
 import { Movie } from '../../models/movie.model';
 import { Location } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatNativeDateModule, MAT_DATE_FORMATS, DateAdapter } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
+
+// Custom date formats to match Netflix style
+export const NETFLIX_DATE_FORMATS = {
+  parse: {
+    dateInput: 'MM/DD/YYYY',
+  },
+  display: {
+    dateInput: 'MM/DD/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 @Component({
   selector: 'app-movie-form',
   templateUrl: './movie-form.component.html',
   styleUrls: ['./movie-form.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule,
-    //  RouterLink
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatDatepickerModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatNativeDateModule,
+    MatIconModule
+  ],
+  providers: [
+    { provide: MAT_DATE_FORMATS, useValue: NETFLIX_DATE_FORMATS }
   ]
 })
 export class MovieFormComponent implements OnInit {
@@ -24,6 +51,7 @@ export class MovieFormComponent implements OnInit {
   submitting = false;
   posterPreview: string | null = null;
   isComingSoon = false;
+  maxDate: Date = new Date(new Date().getFullYear() + 5, 11, 31); // Max date 5 years from now
 
   // Predefined list of common movie genres
   genreOptions: string[] = [
@@ -58,7 +86,7 @@ export class MovieFormComponent implements OnInit {
       title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       releaseYear: ['', [Validators.required, Validators.min(1888), Validators.max(this.getCurrentYear() + 5)]],
-      releaseDate: ['', [Validators.required, Validators.maxLength(50)]], // Date field
+      releaseDate: [null, [Validators.required]], // Date field
       director: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       genre: this.fb.array([], [Validators.required, Validators.minLength(1)]),
       duration: ['', [Validators.required, Validators.min(1), Validators.max(600)]],
@@ -117,12 +145,18 @@ export class MovieFormComponent implements OnInit {
       releaseDateControl?.updateValueAndValidity();
     }
 
+    // Prepare release date as Date object if it exists
+    let releaseDate = null;
+    if (movie.releaseDate && !this.isComingSoon) {
+      releaseDate = new Date(movie.releaseDate);
+    }
+
     // Update form values
     this.movieForm.patchValue({
       title: movie.title,
       description: movie.description,
       releaseYear: movie.releaseYear,
-      releaseDate: movie.releaseDate, // Update with release date value
+      releaseDate: releaseDate, // Now properly a Date object or null
       director: movie.director,
       duration: movie.duration,
       rating: movie.rating,
@@ -170,7 +204,14 @@ export class MovieFormComponent implements OnInit {
       return;
     }
 
-    const movieData: Movie = this.movieForm.value;
+    // Get the form values and prepare data for submission
+    const formValues = this.movieForm.value;
+    const movieData: Movie = {
+      ...formValues,
+      // Format the date if it exists and not in Coming Soon mode
+      releaseDate: this.isComingSoon ? null : formValues.releaseDate
+    };
+
     this.submitting = true;
 
     if (this.isEditMode && this.movieId) {

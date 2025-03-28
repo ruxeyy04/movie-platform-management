@@ -1,3 +1,6 @@
+/* Import necessary Angular Material styles */
+@import '@angular/material/prebuilt-themes/pink-bluegrey.css';
+
 /* Global Styles - Netflix-Inspired */
 :root {
   --primary-color: #e50914;

@@ -103,16 +103,19 @@
                                     <div class="form-group mb-4">
                                         <label for="releaseDate" class="form-label">Release Date</label>
 
-
-
                                         <!-- Date Input (visible when Coming Soon is off) -->
                                         <div class="date-picker-container" *ngIf="!isComingSoon">
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                                                <input type="date" id="releaseDate" class="form-control"
-                                                    formControlName="releaseDate"
+                                                <input type="text" id="releaseDate" class="form-control"
+                                                    [matDatepicker]="releaseDatePicker" formControlName="releaseDate"
+                                                    placeholder="MM/DD/YYYY" [max]="maxDate" readonly
                                                     [ngClass]="{'is-invalid': movieForm.get('releaseDate')?.invalid && movieForm.get('releaseDate')?.touched}">
+                                                <mat-datepicker-toggle matSuffix [for]="releaseDatePicker"
+                                                    class="hidden-toggle">
+                                                </mat-datepicker-toggle>
                                             </div>
+                                            <mat-datepicker #releaseDatePicker></mat-datepicker>
                                             <div class="invalid-feedback"
                                                 *ngIf="movieForm.get('releaseDate')?.errors?.['required'] && !isComingSoon">
                                                 Release date is required.
