@@ -1,32 +1,131 @@
-.movie-details {
-  animation: fadeIn 0.4s ease-in-out;
+.netflix-details {
+  padding-top: 70px; /* To account for fixed header */
+}
+
+.netflix-loader {
+  text-align: center;
+  padding: 100px 0;
+}
+
+.spinner {
+  margin: 20px auto;
+  width: 70px;
+  text-align: center;
+}
+
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background-color: var(--primary-color);
+  border-radius: 100%;
+  display: inline-block;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  margin: 0 5px;
+}
+
+.spinner .bounce1 {
+  animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+  animation-delay: -0.16s;
+}
+
+@keyframes sk-bouncedelay {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+.error-container {
+  max-width: 600px;
+  margin: 100px auto;
+  background-color: rgba(220, 53, 69, 0.1);
+  border-color: rgba(220, 53, 69, 0.2);
+  color: var(--text-light);
+  padding: 30px;
+}
+
+.details-hero-banner {
+  height: 60vh;
+  min-height: 300px;
+  max-height: 500px;
+  position: relative;
+  background-size: cover;
+  background-position: center 20%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.details-hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to top,
+    var(--bg-dark) 0%,
+    rgba(20, 20, 20, 0.7) 60%,
+    rgba(20, 20, 20, 0.4) 100%
+  );
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 24px;
+  z-index: 10;
+  transition: transform 0.2s;
+}
+
+.back-button:hover {
+  transform: scale(1.1);
+}
+
+.details-content {
+  margin-top: -150px;
+  position: relative;
+  z-index: 10;
+  padding-bottom: 100px;
 }
 
 .poster-container {
   position: relative;
+  border-radius: 8px;
   overflow: hidden;
-  border-radius: 0.25rem;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  margin-bottom: 20px;
 }
 
-.movie-rating {
+.main-poster {
+  width: 100%;
+  display: block;
+}
+
+.rating-badge-large {
   position: absolute;
   top: 10px;
   right: 10px;
-}
-
-.rating-badge {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.75);
   color: white;
-  border-radius: 50%;
   width: 60px;
   height: 60px;
+  border-radius: 50%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   font-weight: bold;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 }
 
 .rating-value {
@@ -39,53 +138,207 @@
   opacity: 0.8;
 }
 
+.release-status-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.action-buttons {
+  margin-bottom: 30px;
+}
+
+.btn-netflix-play {
+  background-color: white;
+  color: black;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s;
+  margin-bottom: 15px;
+  border: none;
+  text-decoration: none;
+}
+
+.btn-netflix-play:hover {
+  background-color: rgba(255, 255, 255, 0.85);
+  transform: scale(1.02);
+}
+
+.btn-netflix-play i {
+  font-size: 1.5rem;
+}
+
+.secondary-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-action-secondary {
+  flex: 1;
+  background-color: rgba(109, 109, 110, 0.4);
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  text-decoration: none;
+  border: none;
+}
+
+.btn-action-secondary i {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.btn-action-secondary:hover {
+  background-color: rgba(109, 109, 110, 0.7);
+  color: white;
+}
+
+.btn-delete {
+  background-color: rgba(220, 53, 69, 0.4);
+}
+
+.btn-delete:hover {
+  background-color: rgba(220, 53, 69, 0.7);
+}
+
+.details-info {
+  padding: 20px;
+}
+
 .movie-title {
-  font-size: 2rem;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
   font-weight: 700;
-  margin-bottom: 0.5rem;
 }
 
 .movie-year {
   font-weight: 400;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
-.movie-genres {
-  margin-bottom: 1rem;
+.movie-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 15px;
+  color: var(--text-muted);
 }
 
-.movie-director {
-  font-style: italic;
+.separator {
+  margin: 0 10px;
 }
 
-.movie-description {
+.genres-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.genre-pill {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.synopsis,
+.director-info,
+.technical-details {
+  margin-bottom: 30px;
+}
+
+.synopsis h3,
+.director-info h3,
+.technical-details h3 {
+  color: var(--text-light);
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.synopsis p,
+.director-info p {
+  color: var(--text-muted);
   line-height: 1.6;
+  font-size: 1.05rem;
 }
 
-.action-buttons {
-  background-color: white;
-  border-radius: 0.25rem;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.details-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+.details-table tr {
+  transition: background-color 0.2s;
+}
+
+.details-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.details-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.details-table td:first-child {
+  width: 40%;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.details-table td:last-child {
+  color: var(--text-muted);
+}
+
+@media (max-width: 992px) {
+  .movie-title {
+    font-size: 2rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .details-content {
+    margin-top: -100px;
   }
 }
 
 @media (max-width: 768px) {
-  .movie-title {
-    font-size: 1.5rem;
+  .details-hero-banner {
+    height: 40vh;
   }
 
-  .action-buttons {
-    margin-bottom: 2rem;
+  .details-content {
+    margin-top: -50px;
+  }
+
+  .movie-title {
+    font-size: 1.8rem;
+  }
+
+  .rating-badge-large {
+    width: 50px;
+    height: 50px;
+  }
+
+  .rating-value {
+    font-size: 1.2rem;
   }
 }

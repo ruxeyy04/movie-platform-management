@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { NotificationService, Notification } from '../../services/notification.service';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-toast-notifications',
@@ -17,13 +17,16 @@ export class ToastNotificationsComponent implements OnInit, OnDestroy {
   constructor(private notificationService: NotificationService) { }
 
   ngOnInit(): void {
-    this.subscription = this.notificationService.getNotifications()
-      .subscribe(notifications => {
+    // Subscribe to notifications once
+    this.subscription = this.notificationService.notifications$.subscribe(
+      notifications => {
         this.notifications = notifications;
-      });
+      }
+    );
   }
 
   ngOnDestroy(): void {
+    // Clean up the subscription when component is destroyed
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
@@ -39,17 +42,11 @@ export class ToastNotificationsComponent implements OnInit, OnDestroy {
     }
   }
 
-  getBgClass(type: string): string {
-    switch (type) {
-      case 'success': return 'bg-success';
-      case 'error': return 'bg-danger';
-      case 'warning': return 'bg-warning';
-      case 'info': return 'bg-info';
-      default: return 'bg-info';
-    }
+  getToastClass(type: string): string {
+    return type;
   }
 
   dismiss(id: number): void {
-    this.notificationService.removeNotification(id);
+    this.notificationService.remove(id);
   }
 }

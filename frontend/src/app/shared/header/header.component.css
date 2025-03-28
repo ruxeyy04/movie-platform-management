@@ -1,35 +1,122 @@
-.active {
-  font-weight: bold;
-  text-decoration: underline;
+.netflix-header {
+  background-color: transparent;
+  background-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.7) 10%,
+    transparent
+  );
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000; /* Ensure this is higher than other components */
+  padding: 20px 0;
+  transition: background-color 0.3s ease;
+}
+
+/* Make header more visible when scrolled */
+.netflix-header.scrolled {
+  background-color: var(--bg-darker);
+}
+
+.netflix-logo-text {
+  color: var(--primary-color);
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.nav-link {
+  color: var(--text-light);
+  font-size: 14px;
+  margin-right: 15px;
+  transition: color 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--text-muted);
+}
+
+.search-container {
+  position: relative;
+}
+
+.search-form {
+  display: flex;
+  align-items: center;
+}
+
+.search-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 18px;
+  padding: 5px;
+  cursor: pointer;
 }
 
 .search-input {
-  max-width: 400px;
+  background-color: rgba(0, 0, 0, 0.75);
+  border: 1px solid var(--text-muted);
+  color: var(--text-light);
+  border-radius: 3px;
+  padding: 7px 32px 7px 10px;
+  font-size: 14px;
+  width: 0;
+  opacity: 0;
+  transition: width 0.3s, opacity 0.3s;
 }
 
-.mobile-menu {
-  display: none;
-  flex-direction: column;
-  padding-top: 0.5rem;
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.3s ease-out;
+.search-input.active {
+  width: 250px;
+  opacity: 1;
 }
 
-.mobile-menu.show {
-  display: flex;
-  max-height: 200px;
-}
-
-.mobile-menu-button {
+.netflix-menu-button {
+  background: transparent;
   border: none;
-  padding: 0.5rem;
-  font-size: 1.25rem;
+  color: var(--text-light);
+  font-size: 24px;
+  padding: 0;
+}
+
+.netflix-mobile-menu {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  background-color: var(--bg-darker);
+  padding: 20px;
+  z-index: 999;
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.3s, opacity 0.3s;
+  visibility: hidden;
+}
+
+.netflix-mobile-menu.active {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.netflix-mobile-menu .nav-link {
+  font-size: 16px;
+  padding: 12px 0;
+  margin: 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-search {
+  margin-top: 15px;
 }
 
 @media (max-width: 768px) {
-  .mobile-menu.show {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 0.5rem;
+  .netflix-logo-text {
+    font-size: 20px;
   }
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }

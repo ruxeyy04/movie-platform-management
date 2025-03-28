@@ -1,77 +1,56 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 export interface Notification {
     id: number;
     message: string;
     type: 'success' | 'error' | 'info' | 'warning';
-    timeout?: number;
 }
 
 @Injectable({
     providedIn: 'root'
 })
 export class NotificationService {
-    private notifications = new BehaviorSubject<Notification[]>([]);
+    private _notifications = new BehaviorSubject<Notification[]>([]);
     private counter = 0;
 
-    constructor() { }
-
-    getNotifications(): Observable<Notification[]> {
-        return this.notifications.asObservable();
+    get notifications$() {
+        return this._notifications.asObservable();
     }
 
-    success(message: string, timeout: number = 5000): void {
-        this.addNotification({
-            id: this.counter++,
-            message,
-            type: 'success',
-            timeout
-        });
+    success(message: string): void {
+        this.show(message, 'success');
     }
 
-    error(message: string, timeout: number = 5000): void {
-        this.addNotification({
-            id: this.counter++,
-            message,
-            type: 'error',
-            timeout
-        });
+    error(message: string): void {
+        this.show(message, 'error');
     }
 
-    info(message: string, timeout: number = 5000): void {
-        this.addNotification({
-            id: this.counter++,
-            message,
-            type: 'info',
-            timeout
-        });
+    info(message: string): void {
+        this.show(message, 'info');
     }
 
-    warning(message: string, timeout: number = 5000): void {
-        this.addNotification({
-            id: this.counter++,
-            message,
-            type: 'warning',
-            timeout
-        });
+    warning(message: string): void {
+        this.show(message, 'warning');
     }
 
-    private addNotification(notification: Notification): void {
-        const current = this.notifications.value;
-        const updated = [...current, notification];
-        this.notifications.next(updated);
+    private show(message: string, type: 'success' | 'error' | 'info' | 'warning'): void {
+        const id = this.counter++;
 
-        if (notification.timeout) {
-            setTimeout(() => {
-                this.removeNotification(notification.id);
-            }, notification.timeout);
-        }
+        // Add the notification
+        const currentNotifications = this._notifications.value;
+        const newNotifications = [...currentNotifications, { id, message, type }];
+        this._notifications.next(newNotifications);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            this.remove(id);
+        }, 1000);
     }
 
-    removeNotification(id: number): void {
-        const current = this.notifications.value;
-        const updated = current.filter(notification => notification.id !== id);
-        this.notifications.next(updated);
+    remove(id: number): void {
+        const currentNotifications = this._notifications.value;
+        const newNotifications = currentNotifications.filter(notification => notification.id !== id);
+        this._notifications.next(newNotifications);
     }
 }

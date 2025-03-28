@@ -10,7 +10,9 @@ import { CommonModule } from '@angular/common';
   templateUrl: './movie-player.component.html',
   styleUrls: ['./movie-player.component.css'],
   standalone: true,
-  imports: [CommonModule, RouterLink]
+  imports: [CommonModule,
+    //  RouterLink
+  ]
 })
 export class MoviePlayerComponent implements OnInit {
   movie: Movie | null = null;

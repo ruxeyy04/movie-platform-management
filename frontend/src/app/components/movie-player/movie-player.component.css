@@ -1,64 +1,344 @@
-.movie-player-container {
-  animation: fadeIn 0.4s ease-in-out;
+.netflix-player {
+  background-color: black;
+  min-height: 100vh;
+  padding-top: 70px; /* Add padding to account for the fixed navbar */
+}
+
+.netflix-loader {
+  text-align: center;
+  padding: 100px 0;
+  color: var(--text-light);
+}
+
+.spinner {
+  margin: 20px auto;
+  width: 70px;
+  text-align: center;
+}
+
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background-color: var(--primary-color);
+  border-radius: 100%;
+  display: inline-block;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  margin: 0 5px;
+}
+
+.spinner .bounce1 {
+  animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+  animation-delay: -0.16s;
+}
+
+@keyframes sk-bouncedelay {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+.error-container {
+  max-width: 600px;
+  margin: 100px auto;
+  background-color: rgba(220, 53, 69, 0.1);
+  border-color: rgba(220, 53, 69, 0.2);
+  color: var(--text-light);
+  padding: 30px;
+}
+
+.player-container {
+  width: 100%;
+}
+
+.player-header {
+  position: fixed;
+  top: 70px; /* Shift down to avoid navbar overlap */
+  left: 0;
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  z-index: 90; /* Make sure this is lower than the navbar z-index */
+  display: flex;
+  align-items: center;
+}
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 24px;
+  margin-right: 20px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.back-button:hover {
+  opacity: 1;
+}
+
+.movie-info-mini {
+  opacity: 0.8;
+}
+
+.playing-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 400;
 }
 
 .video-container {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
-  overflow: hidden;
+  width: 100%;
+  height: 70vh;
+  background-color: black;
+  position: relative;
+  margin-top: 50px; /* Add margin to move it down from the player header */
+}
+
+.netflix-theater-mode {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.netflix-video-player {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 
 .demo-player {
-  background-color: #1a1a1a;
-  color: white;
-  padding: 2rem;
+  width: 100%;
+  height: 100%;
+  background-color: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.player-controls {
+.player-icon {
+  font-size: 80px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 20px;
+}
+
+.player-content {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.player-content h2 {
+  font-size: 2rem;
   margin-bottom: 10px;
 }
 
-.btn-player {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  display: inline-flex;
+.player-meta {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.player-controls-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.player-progress {
+  margin-bottom: 15px;
+}
+
+.progress-bar-container {
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 5px;
+}
+
+.progress-bar-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.progress-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: var(--primary-color);
+}
+
+.progress-bar-hover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.time-display {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.player-controls {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
+}
+
+.controls-left,
+.controls-right {
+  display: flex;
+  align-items: center;
+}
+
+.control-button {
+  background: transparent;
+  color: white;
+  border: none;
   font-size: 1.2rem;
+  margin-right: 15px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
 }
 
-.player-thumbnail {
-  width: 150px;
-  height: auto;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.control-button:hover {
+  opacity: 1;
 }
 
-.movie-title {
-  font-size: 1.5rem;
+.volume-control {
+  display: flex;
+  align-items: center;
+}
+
+.volume-slider-container {
+  width: 80px;
+  display: none;
+}
+
+.volume-control:hover .volume-slider-container {
+  display: block;
+}
+
+.volume-slider {
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  position: relative;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.volume-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: white;
+}
+
+.now-playing-info {
+  color: var(--text-light);
+  padding: 30px 0 60px;
+}
+
+.playing-title-full {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.playing-year {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.movie-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 15px;
+  color: var(--text-muted);
+}
+
+.separator {
+  margin: 0 10px;
+}
+
+.genres-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.genre-pill {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.synopsis {
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.director {
+  color: var(--text-muted);
+}
+
+.poster-thumbnail {
+  border-radius: 8px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-width: 768px) {
-  .player-thumbnail {
-    width: 100px;
+  .video-container {
+    height: 50vh;
   }
 
-  .movie-title {
-    font-size: 1.2rem;
+  .player-icon {
+    font-size: 50px;
+  }
+
+  .player-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .playing-title-full {
+    font-size: 1.5rem;
+  }
+
+  .poster-thumbnail {
+    margin-top: 20px;
   }
 }

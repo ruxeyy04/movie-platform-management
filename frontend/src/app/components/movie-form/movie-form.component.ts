@@ -5,13 +5,16 @@ import { CommonModule } from '@angular/common';
 import { MovieService } from '../../services/movie.service';
 import { Movie } from '../../models/movie.model';
 import { Location } from '@angular/common';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-movie-form',
   templateUrl: './movie-form.component.html',
   styleUrls: ['./movie-form.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink]
+  imports: [CommonModule, ReactiveFormsModule,
+    //  RouterLink
+  ]
 })
 export class MovieFormComponent implements OnInit {
   movieForm!: FormGroup;
@@ -34,9 +37,9 @@ export class MovieFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private movieService: MovieService,
-    private location: Location
+    private location: Location,
+    private notificationService: NotificationService
   ) { }
-
   ngOnInit(): void {
     this.initForm();
 
@@ -53,7 +56,8 @@ export class MovieFormComponent implements OnInit {
     this.movieForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
-      releaseYear: ['', [Validators.required, Validators.min(1888), Validators.max(new Date().getFullYear() + 5)]],
+      releaseYear: ['', [Validators.required, Validators.min(1888), Validators.max(this.getCurrentYear() + 5)]],
+      releaseDate: ['', [Validators.required, Validators.maxLength(50)]], // New field with validation
       director: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       genre: this.fb.array([], [Validators.required, Validators.minLength(1)]),
       duration: ['', [Validators.required, Validators.min(1), Validators.max(600)]],
@@ -107,6 +111,7 @@ export class MovieFormComponent implements OnInit {
       title: movie.title,
       description: movie.description,
       releaseYear: movie.releaseYear,
+      releaseDate: movie.releaseDate, // Update with release date value
       director: movie.director,
       duration: movie.duration,
       rating: movie.rating,
@@ -150,6 +155,7 @@ export class MovieFormComponent implements OnInit {
         const control = this.movieForm.get(key);
         control?.markAsTouched();
       });
+      this.notificationService.warning('Please fix the validation errors before submitting.');
       return;
     }
 
@@ -161,12 +167,13 @@ export class MovieFormComponent implements OnInit {
       this.movieService.updateMovie(this.movieId, movieData).subscribe({
         next: (updatedMovie) => {
           this.submitting = false;
+          this.notificationService.success(`"${updatedMovie.title}" has been updated successfully.`);
           this.router.navigate(['/movies', updatedMovie.id]);
         },
         error: (error) => {
           console.error('Error updating movie', error);
           this.submitting = false;
-          alert('Failed to update movie. Please try again.');
+          this.notificationService.error('Failed to update movie. Please try again.');
         }
       });
     } else {
@@ -174,12 +181,13 @@ export class MovieFormComponent implements OnInit {
       this.movieService.addMovie(movieData).subscribe({
         next: (newMovie) => {
           this.submitting = false;
+          this.notificationService.success(`"${newMovie.title}" has been added successfully.`);
           this.router.navigate(['/movies', newMovie.id]);
         },
         error: (error) => {
           console.error('Error creating movie', error);
           this.submitting = false;
-          alert('Failed to create movie. Please try again.');
+          this.notificationService.error('Failed to create movie. Please try again.');
         }
       });
     }
@@ -187,5 +195,12 @@ export class MovieFormComponent implements OnInit {
 
   goBack(): void {
     this.location.back();
+  }
+  getCurrentYear(): number {
+    return new Date().getFullYear();
+  }
+  // Add this method to MovieFormComponent to check if a genre is already selected
+  isGenreSelected(genre: string): boolean {
+    return this.genreArray.value.includes(genre);
   }
 }

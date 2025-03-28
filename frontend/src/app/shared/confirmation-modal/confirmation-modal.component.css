@@ -1,15 +1,15 @@
-.modal-backdrop {
+.netflix-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   z-index: 1050;
   animation: fadeIn 0.2s ease-in-out;
 }
 
-.modal-container {
+.netflix-modal-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -22,39 +22,89 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
-.modal-content {
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+.netflix-modal-content {
+  background-color: var(--bg-light);
+  border-radius: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   width: 100%;
   max-width: 500px;
   animation: slideIn 0.3s ease-in-out;
   position: relative;
+  color: var(--text-light);
 }
 
-.modal-header {
+.netflix-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid #dee2e6;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.modal-title {
+.netflix-modal-title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.4rem;
+  font-weight: 600;
 }
 
-.modal-body {
-  padding: 1rem;
+.netflix-close-button {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s;
 }
 
-.modal-footer {
-  padding: 1rem;
-  border-top: 1px solid #dee2e6;
+.netflix-close-button:hover {
+  color: var(--text-light);
+}
+
+.netflix-modal-body {
+  padding: 20px;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.netflix-modal-footer {
+  padding: 15px 20px 20px;
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: 15px;
+}
+
+.btn-netflix-cancel,
+.btn-netflix-confirm {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-netflix-cancel {
+  background-color: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--text-muted);
+}
+
+.btn-netflix-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-netflix-confirm {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-netflix-confirm:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.btn-netflix-confirm.btn-danger {
+  background-color: #dc3545;
 }
 
 @keyframes fadeIn {
@@ -78,7 +128,17 @@
 }
 
 @media (max-width: 576px) {
-  .modal-content {
+  .netflix-modal-content {
     max-width: 90%;
+    margin: 0 20px;
+  }
+
+  .netflix-modal-footer {
+    flex-direction: column;
+  }
+
+  .btn-netflix-cancel,
+  .btn-netflix-confirm {
+    width: 100%;
   }
 }

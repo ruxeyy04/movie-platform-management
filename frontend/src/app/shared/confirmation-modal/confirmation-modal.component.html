@@ -1,17 +1,19 @@
-<div class="modal-backdrop" *ngIf="showModal" (click)="onCancel()"></div>
-<div class="modal-container" *ngIf="showModal">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h5 class="modal-title">{{ title }}</h5>
-            <button type="button" class="btn-close" aria-label="Close" (click)="onCancel()"></button>
+<div class="netflix-modal-backdrop" *ngIf="showModal" (click)="onCancel()"></div>
+<div class="netflix-modal-container" *ngIf="showModal">
+    <div class="netflix-modal-content" (click)="$event.stopPropagation()">
+        <div class="netflix-modal-header">
+            <h5 class="netflix-modal-title">{{ title }}</h5>
+            <button type="button" class="netflix-close-button" aria-label="Close" (click)="onCancel()">
+                <i class="bi bi-x"></i>
+            </button>
         </div>
-        <div class="modal-body">
-            <p>{{ message }}</p>
+        <div class="netflix-modal-body">
+            <p [innerHTML]="message"></p>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="onCancel()">{{ cancelButtonText }}</button>
-            <button type="button" class="btn" [ngClass]="confirmButtonClass" (click)="onConfirm()">{{ confirmButtonText
-                }}</button>
+        <div class="netflix-modal-footer">
+            <button type="button" class="btn-netflix-cancel" (click)="onCancel()">{{ cancelButtonText }}</button>
+            <button type="button" class="btn-netflix-confirm" [ngClass]="confirmButtonClass" (click)="onConfirm()">{{
+                confirmButtonText }}</button>
         </div>
     </div>
 </div>

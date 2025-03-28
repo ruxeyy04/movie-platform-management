@@ -1,17 +1,233 @@
-.movie-form-container {
+.netflix-form-container {
+  padding-top: 70px;
+  min-height: 100vh;
+  background-color: var(--bg-darker);
+}
+
+.form-header {
+  background-color: var(--bg-dark);
+  padding: 20px 0;
+  margin-bottom: 30px;
+}
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 1rem;
+  margin-bottom: 15px;
+  padding: 0;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.back-button:hover {
+  opacity: 1;
+}
+
+.form-title {
+  font-size: 1.8rem;
+  margin: 0;
+  color: var(--text-light);
+}
+
+.form-content {
+  padding-bottom: 60px;
+}
+
+.netflix-loader {
+  text-align: center;
+  padding: 50px 0;
+}
+
+.spinner {
+  margin: 20px auto;
+  width: 70px;
+  text-align: center;
+}
+
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background-color: var(--primary-color);
+  border-radius: 100%;
+  display: inline-block;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  margin: 0 5px;
+}
+
+.spinner .bounce1 {
+  animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+  animation-delay: -0.16s;
+}
+
+@keyframes sk-bouncedelay {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+.netflix-form {
   animation: fadeIn 0.4s ease-in-out;
 }
 
-.poster-container {
-  margin-bottom: 1rem;
+.form-card {
+  background-color: var(--bg-light);
+  border-radius: 8px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.form-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 25px;
+  color: var(--text-light);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 15px;
+}
+
+.form-floating > label {
+  color: var(--text-muted);
+}
+
+.form-control,
+.form-select {
+  background-color: var(--bg-dark);
+  border-color: var(--border-color);
+  color: var(--text-light);
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(229, 9, 20, 0.25);
+}
+
+.form-textarea {
+  min-height: 120px !important;
+}
+
+.form-label {
+  color: var(--text-light);
+  margin-bottom: 10px;
+}
+
+.form-text {
+  color: var(--text-muted);
+}
+
+.form-range {
+  height: 8px;
+}
+
+.form-range::-webkit-slider-thumb {
+  background-color: var(--primary-color);
+}
+
+.rating-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.rating-value {
+  font-size: 1.8rem;
+  color: var(--primary-color);
+  font-weight: 700;
+  width: 60px;
+  text-align: center;
+}
+
+.selected-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.selected-genre {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-remove-genre {
+  background: transparent;
+  color: white;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  opacity: 0.8;
+}
+
+.btn-remove-genre:hover {
+  opacity: 1;
+}
+
+.no-genres {
+  color: var(--text-muted);
+  padding: 10px 0;
+}
+
+.genre-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: var(--bg-dark);
+  border-radius: 8px;
+}
+
+.btn-genre-option {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-light);
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.btn-genre-option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-genre-option.selected {
+  background-color: rgba(229, 9, 20, 0.2);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.poster-preview-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
 }
 
 .poster-preview {
   width: 100%;
-  height: 300px;
-  border-radius: 8px;
+  height: 400px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .poster-preview img {
@@ -22,15 +238,15 @@
 
 .poster-placeholder {
   width: 100%;
-  height: 300px;
-  background-color: #f8f9fa;
-  border: 2px dashed #dee2e6;
+  height: 400px;
+  background-color: var(--bg-dark);
+  border: 2px dashed var(--border-color);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 .poster-placeholder i {
@@ -38,29 +254,59 @@
   margin-bottom: 1rem;
 }
 
-.genre-options {
-  max-height: 120px;
-  overflow-y: auto;
-  padding: 0.5rem;
-  border: 1px solid #dee2e6;
-  border-radius: 0.25rem;
+.form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.btn-netflix-cancel,
+.btn-netflix-submit {
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s;
 }
 
-/* Make sure form elements are responsive on mobile */
-@media (max-width: 768px) {
+.btn-netflix-cancel {
+  background-color: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--text-muted);
+}
+
+.btn-netflix-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-netflix-submit {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-netflix-submit:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  transform: scale(1.05);
+}
+
+.btn-netflix-submit:disabled {
+  background-color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+@media (max-width: 992px) {
   .poster-preview,
   .poster-placeholder {
-    height: 200px;
+    height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-title {
+    font-size: 1.5rem;
   }
 }

@@ -1,60 +1,63 @@
-<header class="bg-dark text-white py-3">
-    <div class="container">
+<header class="netflix-header">
+    <div class="container-fluid px-4">
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <h1 class="h3 m-0"><a routerLink="/" class="text-white text-decoration-none">
-                        <i class="bi bi-film me-2"></i>{{ title }}
-                    </a></h1>
+                <h1 class="netflix-logo m-0">
+                    <a (click)="goToHome()" class="text-decoration-none cursor-pointer">
+                        <span class="netflix-logo-text">MOVIEFLIX</span>
+                    </a>
+                </h1>
+
+                <nav class="main-nav d-none d-md-flex ms-4">
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a class="nav-link" routerLink="/movies" routerLinkActive="active">Browse</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" routerLink="/movies/new" routerLinkActive="active">Add Movie</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
 
-            <div class="d-none d-md-block flex-grow-1 mx-4">
-                <form (submit)="handleSearch($event)" class="d-flex">
-                    <input type="search" class="form-control search-input" placeholder="Search movies..."
-                        [formControl]="searchControl">
-                    <button type="submit" class="btn btn-primary ms-2">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </form>
+            <div class="d-flex align-items-center">
+                <div class="search-container me-3">
+                    <form (submit)="handleSearch($event)" class="search-form">
+                        <button type="button" class="search-toggle" (click)="toggleSearch()">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <input type="search" class="search-input" [class.active]="searchActive"
+                            placeholder="Titles, people, genres" [formControl]="searchControl">
+                    </form>
+                </div>
+
+                <button class="d-md-none netflix-menu-button" (click)="toggleMobileMenu()">
+                    <i class="bi" [ngClass]="showMobileMenu ? 'bi-x' : 'bi-list'"></i>
+                </button>
             </div>
-
-            <nav class="d-none d-md-block">
-                <ul class="nav">
-                    <li class="nav-item">
-                        <a class="nav-link text-white" routerLink="/movies" routerLinkActive="active">Movies</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" routerLink="/movies/new" routerLinkActive="active">Add Movie</a>
-                    </li>
-                </ul>
-            </nav>
-
-            <button class="d-md-none btn btn-dark mobile-menu-button" (click)="toggleMobileMenu()">
-                <i class="bi" [ngClass]="showMobileMenu ? 'bi-x-lg' : 'bi-list'"></i>
-            </button>
         </div>
 
-        <!-- Mobile Search and Menu -->
-        <div class="mobile-menu" [ngClass]="{'show': showMobileMenu}">
-            <form (submit)="handleSearch($event)" class="d-flex mb-3 mt-3">
-                <input type="search" class="form-control search-input" placeholder="Search movies..."
-                    [formControl]="searchControl">
-                <button type="submit" class="btn btn-primary ms-2">
-                    <i class="bi bi-search"></i>
-                </button>
-            </form>
-
+        <!-- Mobile Menu -->
+        <div class="netflix-mobile-menu" [class.active]="showMobileMenu">
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link text-white" routerLink="/movies" routerLinkActive="active"
-                        (click)="toggleMobileMenu()">
-                        <i class="bi bi-collection-play me-2"></i>Movies
+                    <a class="nav-link" routerLink="/movies" routerLinkActive="active" (click)="toggleMobileMenu()">
+                        <i class="bi bi-collection-play me-2"></i>Browse Movies
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" routerLink="/movies/new" routerLinkActive="active"
-                        (click)="toggleMobileMenu()">
+                    <a class="nav-link" routerLink="/movies/new" routerLinkActive="active" (click)="toggleMobileMenu()">
                         <i class="bi bi-plus-circle me-2"></i>Add Movie
                     </a>
+                </li>
+                <li class="nav-item mt-3">
+                    <form (submit)="handleSearch($event)" class="d-flex mobile-search">
+                        <input type="search" class="form-control" placeholder="Search movies..."
+                            [formControl]="searchControl">
+                        <button type="submit" class="btn btn-primary ms-2">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>

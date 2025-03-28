@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Movie } from '../../models/movie.model';
 import { MovieService } from '../../services/movie.service';
 import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
-
+import { NotificationService } from '../../services/notification.service';
 @Component({
   selector: 'app-movie-list',
   templateUrl: './movie-list.component.html',
@@ -20,7 +20,7 @@ export class MovieListComponent implements OnInit {
   movieToDelete: Movie | null = null;
   deleteInProgress = false;
 
-  constructor(private movieService: MovieService) { }
+  constructor(private movieService: MovieService, private notificationService: NotificationService) { }
 
   ngOnInit(): void {
     this.loadMovies();
@@ -57,6 +57,7 @@ export class MovieListComponent implements OnInit {
 
     this.deleteInProgress = true;
     const movieId = this.movieToDelete.id;
+    const movieTitle = this.movieToDelete.title;
 
     this.movieService.deleteMovie(movieId).subscribe({
       next: () => {
@@ -64,11 +65,12 @@ export class MovieListComponent implements OnInit {
         this.deleteInProgress = false;
         this.showDeleteModal = false;
         this.movieToDelete = null;
+        this.notificationService.success(`"${movieTitle}" has been deleted successfully.`);
       },
       error: (err) => {
         console.error('Error deleting movie', err);
         this.deleteInProgress = false;
-        alert('Failed to delete the movie. Please try again.');
+        this.notificationService.error('Failed to delete the movie. Please try again.');
       }
     });
   }

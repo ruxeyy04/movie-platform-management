@@ -1,13 +1,14 @@
-<div class="toast-container">
-    <div *ngFor="let notification of notifications" class="toast show" [ngClass]="getBgClass(notification.type)"
+<div class="netflix-toast-container">
+    <div *ngFor="let notification of notifications" class="netflix-toast" [ngClass]="getToastClass(notification.type)"
         role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-            <i class="bi me-2 text-white" [ngClass]="getIcon(notification.type)"></i>
-            <strong class="me-auto text-white">{{ notification.type | titlecase }}</strong>
-            <button type="button" class="btn-close btn-close-white" aria-label="Close"
-                (click)="dismiss(notification.id)"></button>
+        <div class="netflix-toast-header">
+            <i class="bi me-2" [ngClass]="getIcon(notification.type)"></i>
+            <strong class="me-auto">{{ notification.type | titlecase }}</strong>
+            <button type="button" class="netflix-toast-close" aria-label="Close" (click)="dismiss(notification.id)">
+                <i class="bi bi-x"></i>
+            </button>
         </div>
-        <div class="toast-body">
+        <div class="netflix-toast-body">
             {{ notification.message }}
         </div>
     </div>
