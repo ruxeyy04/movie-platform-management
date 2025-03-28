@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Movie } from '../models/movie.model';
 import { MOVIES } from './mock-movies';
 
@@ -15,17 +16,22 @@ export class MovieService {
 
     getMovies(): Observable<Movie[]> {
         if (this.useMock) {
-            return of(MOVIES);
+            return of([...MOVIES]); // Return a copy to prevent modification of original
         }
-        return this.http.get<Movie[]>(this.apiUrl);
+        return this.http.get<Movie[]>(this.apiUrl)
+            .pipe(catchError(this.handleError));
     }
 
     getMovie(id: number): Observable<Movie> {
         if (this.useMock) {
             const movie = MOVIES.find(m => m.id === id);
-            return of(movie as Movie);
+            if (!movie) {
+                return throwError(() => new Error(`Movie with id ${id} not found`));
+            }
+            return of({ ...movie }); // Return a copy to prevent modification of original
         }
-        return this.http.get<Movie>(`${this.apiUrl}/${id}`);
+        return this.http.get<Movie>(`${this.apiUrl}/${id}`)
+            .pipe(catchError(this.handleError));
     }
 
     addMovie(movie: Movie): Observable<Movie> {
@@ -34,31 +40,49 @@ export class MovieService {
             const newId = Math.max(...MOVIES.map(m => m.id || 0)) + 1;
             const newMovie = { ...movie, id: newId };
             MOVIES.push(newMovie);
-            return of(newMovie);
+            return of({ ...newMovie }); // Return a copy
         }
-        return this.http.post<Movie>(this.apiUrl, movie);
+        return this.http.post<Movie>(this.apiUrl, movie)
+            .pipe(catchError(this.handleError));
     }
 
     updateMovie(id: number, movie: Movie): Observable<Movie> {
         if (this.useMock) {
             const index = MOVIES.findIndex(m => m.id === id);
-            if (index !== -1) {
-                MOVIES[index] = { ...movie, id };
-                return of(MOVIES[index]);
+            if (index === -1) {
+                return throwError(() => new Error(`Movie with id ${id} not found`));
             }
-            return of({} as Movie);
+            const updatedMovie = { ...movie, id };
+            MOVIES[index] = updatedMovie;
+            return of({ ...updatedMovie }); // Return a copy
         }
-        return this.http.put<Movie>(`${this.apiUrl}/${id}`, movie);
+        return this.http.put<Movie>(`${this.apiUrl}/${id}`, movie)
+            .pipe(catchError(this.handleError));
     }
 
     deleteMovie(id: number): Observable<void> {
         if (this.useMock) {
             const index = MOVIES.findIndex(m => m.id === id);
-            if (index !== -1) {
-                MOVIES.splice(index, 1);
+            if (index === -1) {
+                return throwError(() => new Error(`Movie with id ${id} not found`));
             }
+            MOVIES.splice(index, 1);
             return of(void 0);
         }
-        return this.http.delete<void>(`${this.apiUrl}/${id}`);
+        return this.http.delete<void>(`${this.apiUrl}/${id}`)
+            .pipe(catchError(this.handleError));
+    }
+
+    private handleError(error: HttpErrorResponse) {
+        let errorMessage = '';
+        if (error.error instanceof ErrorEvent) {
+            // Client-side error
+            errorMessage = `Error: ${error.error.message}`;
+        } else {
+            // Server-side error
+            errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+        }
+        console.error(errorMessage);
+        return throwError(() => new Error(errorMessage));
     }
 }

@@ -1,1 +1,185 @@
-<p>movie-form works!</p>
+<div class="movie-form-container fade-in">
+    <div class="container">
+        <div class="mb-4">
+            <button (click)="goBack()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back
+            </button>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="mb-4">{{ isEditMode ? 'Edit Movie' : 'Add New Movie' }}</h2>
+
+                <div *ngIf="loading" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading movie data...</p>
+                </div>
+
+                <form [formGroup]="movieForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Title -->
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Movie Title *</label>
+                                <input type="text" id="title" class="form-control" formControlName="title"
+                                    [ngClass]="{'is-invalid': movieForm.get('title')?.invalid && movieForm.get('title')?.touched}">
+                                <div class="invalid-feedback" *ngIf="movieForm.get('title')?.errors?.['required']">
+                                    Title is required.
+                                </div>
+                                <div class="invalid-feedback" *ngIf="movieForm.get('title')?.errors?.['minlength']">
+                                    Title must be at least 2 characters.
+                                </div>
+                            </div>
+
+                            <!-- Director -->
+                            <div class="mb-3">
+                                <label for="director" class="form-label">Director *</label>
+                                <input type="text" id="director" class="form-control" formControlName="director"
+                                    [ngClass]="{'is-invalid': movieForm.get('director')?.invalid && movieForm.get('director')?.touched}">
+                                <div class="invalid-feedback" *ngIf="movieForm.get('director')?.errors?.['required']">
+                                    Director name is required.
+                                </div>
+                            </div>
+
+                            <!-- Release Year -->
+                            <div class="mb-3">
+                                <label for="releaseYear" class="form-label">Release Year *</label>
+                                <input type="number" id="releaseYear" class="form-control" formControlName="releaseYear"
+                                    [ngClass]="{'is-invalid': movieForm.get('releaseYear')?.invalid && movieForm.get('releaseYear')?.touched}">
+                                <div class="invalid-feedback"
+                                    *ngIf="movieForm.get('releaseYear')?.errors?.['required']">
+                                    Release year is required.
+                                </div>
+                                <div class="invalid-feedback"
+                                    *ngIf="movieForm.get('releaseYear')?.errors?.['min'] || movieForm.get('releaseYear')?.errors?.['max']">
+                                    Release year must be between 1888 and {{ new Date().getFullYear() + 5 }}.
+                                </div>
+                            </div>
+
+                            <!-- Duration -->
+                            <div class="mb-3">
+                                <label for="duration" class="form-label">Duration (minutes) *</label>
+                                <input type="number" id="duration" class="form-control" formControlName="duration"
+                                    [ngClass]="{'is-invalid': movieForm.get('duration')?.invalid && movieForm.get('duration')?.touched}">
+                                <div class="invalid-feedback" *ngIf="movieForm.get('duration')?.errors?.['required']">
+                                    Duration is required.
+                                </div>
+                                <div class="invalid-feedback"
+                                    *ngIf="movieForm.get('duration')?.errors?.['min'] || movieForm.get('duration')?.errors?.['max']">
+                                    Duration must be between 1 and 600 minutes.
+                                </div>
+                            </div>
+
+                            <!-- Rating -->
+                            <div class="mb-3">
+                                <label for="rating" class="form-label">Rating (0-10) *</label>
+                                <input type="number" id="rating" class="form-control" formControlName="rating"
+                                    step="0.1"
+                                    [ngClass]="{'is-invalid': movieForm.get('rating')?.invalid && movieForm.get('rating')?.touched}">
+                                <div class="invalid-feedback" *ngIf="movieForm.get('rating')?.errors?.['required']">
+                                    Rating is required.
+                                </div>
+                                <div class="invalid-feedback"
+                                    *ngIf="movieForm.get('rating')?.errors?.['min'] || movieForm.get('rating')?.errors?.['max']">
+                                    Rating must be between 0 and 10.
+                                </div>
+                            </div>
+
+                            <!-- Video URL -->
+                            <div class="mb-3">
+                                <label for="videoUrl" class="form-label">Video URL *</label>
+                                <input type="url" id="videoUrl" class="form-control" formControlName="videoUrl"
+                                    [ngClass]="{'is-invalid': movieForm.get('videoUrl')?.invalid && movieForm.get('videoUrl')?.touched}"
+                                    placeholder="https://example.com/movie.mp4">
+                                <div class="invalid-feedback" *ngIf="movieForm.get('videoUrl')?.errors?.['required']">
+                                    Video URL is required.
+                                </div>
+                                <div class="invalid-feedback" *ngIf="movieForm.get('videoUrl')?.errors?.['pattern']">
+                                    Please enter a valid URL starting with http:// or https://
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- Poster Preview -->
+                            <div class="mb-3 poster-container">
+                                <label class="form-label">Poster Preview</label>
+                                <div class="poster-preview" *ngIf="posterPreview">
+                                    <img [src]="posterPreview" alt="Movie poster preview" class="img-fluid">
+                                </div>
+                                <div class="poster-placeholder" *ngIf="!posterPreview">
+                                    <i class="bi bi-image"></i>
+                                    <p>No poster image</p>
+                                </div>
+                            </div>
+
+                            <!-- Poster URL -->
+                            <div class="mb-3">
+                                <label for="posterUrl" class="form-label">Poster URL *</label>
+                                <input type="url" id="posterUrl" class="form-control" formControlName="posterUrl"
+                                    [ngClass]="{'is-invalid': movieForm.get('posterUrl')?.invalid && movieForm.get('posterUrl')?.touched}"
+                                    placeholder="https://example.com/poster.jpg">
+                                <div class="invalid-feedback" *ngIf="movieForm.get('posterUrl')?.errors?.['required']">
+                                    Poster URL is required.
+                                </div>
+                                <div class="invalid-feedback" *ngIf="movieForm.get('posterUrl')?.errors?.['pattern']">
+                                    Please enter a valid URL starting with http:// or https://
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Genres -->
+                    <div class="mb-3">
+                        <label class="form-label">Genres *</label>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <div *ngFor="let genre of genreArray.controls; let i = index"
+                                class="badge bg-primary d-flex align-items-center p-2">
+                                {{ genre.value }}
+                                <button type="button" class="btn-close btn-close-white ms-2"
+                                    (click)="removeGenre(i)"></button>
+                            </div>
+                            <div *ngIf="genreArray.length === 0" class="text-muted">
+                                No genres selected. Please select at least one genre.
+                            </div>
+                        </div>
+                        <div class="genre-options d-flex flex-wrap gap-1 mb-2">
+                            <button *ngFor="let option of genreOptions" type="button"
+                                class="btn btn-sm btn-outline-secondary" (click)="addGenre(option)">
+                                {{ option }}
+                            </button>
+                        </div>
+                        <div class="text-danger small" *ngIf="genreArray.invalid && genreArray.touched">
+                            Please select at least one genre.
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Description *</label>
+                        <textarea id="description" class="form-control" rows="4" formControlName="description"
+                            [ngClass]="{'is-invalid': movieForm.get('description')?.invalid && movieForm.get('description')?.touched}"></textarea>
+                        <div class="invalid-feedback" *ngIf="movieForm.get('description')?.errors?.['required']">
+                            Description is required.
+                        </div>
+                        <div class="invalid-feedback" *ngIf="movieForm.get('description')?.errors?.['minlength']">
+                            Description must be at least 10 characters.
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" (click)="goBack()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="submitting">
+                            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2" role="status"
+                                aria-hidden="true"></span>
+                            {{ isEditMode ? 'Update Movie' : 'Add Movie' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
