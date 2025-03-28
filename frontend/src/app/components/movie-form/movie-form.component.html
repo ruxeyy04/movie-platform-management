@@ -25,13 +25,14 @@
                 <div class="row">
                     <div class="col-lg-8">
                         <div class="form-card main-form">
-                            <h3>Basic Information</h3>
+                            <h3 class="section-title"><i class="bi bi-info-circle me-2"></i>Basic Information</h3>
 
                             <!-- Title -->
-                            <div class="form-floating mb-4">
+                            <div class="form-group mb-4">
+                                <label for="title" class="form-label">Movie Title</label>
                                 <input type="text" id="title" class="form-control" formControlName="title"
+                                    placeholder="Enter movie title"
                                     [ngClass]="{'is-invalid': movieForm.get('title')?.invalid && movieForm.get('title')?.touched}">
-                                <label for="title">Movie Title</label>
                                 <div class="invalid-feedback" *ngIf="movieForm.get('title')?.errors?.['required']">
                                     Title is required.
                                 </div>
@@ -41,11 +42,11 @@
                             </div>
 
                             <!-- Description -->
-                            <div class="form-floating mb-4">
-                                <textarea id="description" class="form-control form-textarea" rows="4"
-                                    formControlName="description"
+                            <div class="form-group mb-4">
+                                <label for="description" class="form-label">Movie Description</label>
+                                <textarea id="description" class="form-control" rows="4" formControlName="description"
+                                    placeholder="Enter movie description"
                                     [ngClass]="{'is-invalid': movieForm.get('description')?.invalid && movieForm.get('description')?.touched}"></textarea>
-                                <label for="description">Movie Description</label>
                                 <div class="invalid-feedback"
                                     *ngIf="movieForm.get('description')?.errors?.['required']">
                                     Description is required.
@@ -56,13 +57,18 @@
                                 </div>
                             </div>
 
+                            <!-- Director and Release Year -->
                             <div class="row">
                                 <div class="col-md-6">
                                     <!-- Director -->
-                                    <div class="form-floating mb-4">
-                                        <input type="text" id="director" class="form-control" formControlName="director"
-                                            [ngClass]="{'is-invalid': movieForm.get('director')?.invalid && movieForm.get('director')?.touched}">
-                                        <label for="director">Director</label>
+                                    <div class="form-group mb-4">
+                                        <label for="director" class="form-label">Director</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                            <input type="text" id="director" class="form-control"
+                                                formControlName="director" placeholder="Enter director name"
+                                                [ngClass]="{'is-invalid': movieForm.get('director')?.invalid && movieForm.get('director')?.touched}">
+                                        </div>
                                         <div class="invalid-feedback"
                                             *ngIf="movieForm.get('director')?.errors?.['required']">
                                             Director name is required.
@@ -71,11 +77,14 @@
                                 </div>
                                 <div class="col-md-6">
                                     <!-- Release Year -->
-                                    <div class="form-floating mb-4">
-                                        <input type="number" id="releaseYear" class="form-control"
-                                            formControlName="releaseYear"
-                                            [ngClass]="{'is-invalid': movieForm.get('releaseYear')?.invalid && movieForm.get('releaseYear')?.touched}">
-                                        <label for="releaseYear">Release Year</label>
+                                    <div class="form-group mb-4">
+                                        <label for="releaseYear" class="form-label">Release Year</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                                            <input type="number" id="releaseYear" class="form-control"
+                                                formControlName="releaseYear" placeholder="YYYY"
+                                                [ngClass]="{'is-invalid': movieForm.get('releaseYear')?.invalid && movieForm.get('releaseYear')?.touched}">
+                                        </div>
                                         <div class="invalid-feedback"
                                             *ngIf="movieForm.get('releaseYear')?.errors?.['required']">
                                             Release year is required.
@@ -88,30 +97,59 @@
                                 </div>
                             </div>
 
+                            <!-- Release Date -->
                             <div class="row">
                                 <div class="col-md-6">
-                                    <!-- Release Date -->
-                                    <div class="form-floating mb-4">
-                                        <input type="text" id="releaseDate" class="form-control"
-                                            formControlName="releaseDate"
-                                            [ngClass]="{'is-invalid': movieForm.get('releaseDate')?.invalid && movieForm.get('releaseDate')?.touched}">
-                                        <label for="releaseDate">Release Date</label>
-                                        <div class="invalid-feedback"
-                                            *ngIf="movieForm.get('releaseDate')?.errors?.['required']">
-                                            Release date is required.
+                                    <div class="form-group mb-4">
+                                        <label for="releaseDate" class="form-label">Release Date</label>
+
+
+
+                                        <!-- Date Input (visible when Coming Soon is off) -->
+                                        <div class="date-picker-container" *ngIf="!isComingSoon">
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                                <input type="date" id="releaseDate" class="form-control"
+                                                    formControlName="releaseDate"
+                                                    [ngClass]="{'is-invalid': movieForm.get('releaseDate')?.invalid && movieForm.get('releaseDate')?.touched}">
+                                            </div>
+                                            <div class="invalid-feedback"
+                                                *ngIf="movieForm.get('releaseDate')?.errors?.['required'] && !isComingSoon">
+                                                Release date is required.
+                                            </div>
                                         </div>
-                                        <div class="form-text">
-                                            Enter a specific date or 'Soon' for upcoming releases.
+
+                                        <!-- Coming Soon Display (visible when Coming Soon is on) -->
+                                        <div class="coming-soon-indicator" *ngIf="isComingSoon">
+                                            <div class="coming-soon-badge">
+                                                <i class="bi bi-calendar-plus"></i> Coming Soon
+                                            </div>
+                                            <div class="coming-soon-message">
+                                                This movie will be listed as "Coming Soon" with no play option
+                                            </div>
+                                        </div>
+                                        <!-- Coming Soon Toggle with Switch -->
+                                        <div class="coming-soon-toggle">
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="comingSoonToggle" [checked]="isComingSoon"
+                                                    (change)="toggleComingSoon($event)">
+                                                <span class="toggle-slider"></span>
+                                                <span class="toggle-label">Coming Soon</span>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="col-md-6">
                                     <!-- Duration -->
-                                    <div class="form-floating mb-4">
-                                        <input type="number" id="duration" class="form-control"
-                                            formControlName="duration"
-                                            [ngClass]="{'is-invalid': movieForm.get('duration')?.invalid && movieForm.get('duration')?.touched}">
-                                        <label for="duration">Duration (minutes)</label>
+                                    <div class="form-group mb-4">
+                                        <label for="duration" class="form-label">Duration (minutes)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-stopwatch"></i></span>
+                                            <input type="number" id="duration" class="form-control"
+                                                formControlName="duration" placeholder="Enter duration in minutes"
+                                                [ngClass]="{'is-invalid': movieForm.get('duration')?.invalid && movieForm.get('duration')?.touched}">
+                                        </div>
                                         <div class="invalid-feedback"
                                             *ngIf="movieForm.get('duration')?.errors?.['required']">
                                             Duration is required.
@@ -127,10 +165,20 @@
                             <!-- Rating -->
                             <div class="form-group mb-4">
                                 <label for="rating" class="form-label">Rating (0-10)</label>
-                                <div class="rating-slider-container">
-                                    <input type="range" id="rating" class="form-range" formControlName="rating" min="0"
-                                        max="10" step="0.1">
-                                    <div class="rating-value">{{ movieForm.get('rating')?.value || 0 }}</div>
+                                <div class="rating-slider-wrapper">
+                                    <div class="rating-slider-container">
+                                        <input type="range" id="rating" class="form-range" formControlName="rating"
+                                            min="0" max="10" step="0.1">
+                                        <div class="rating-value-container">
+                                            <div class="rating-value">{{ movieForm.get('rating')?.value || 0 }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="rating-stars">
+                                        <i *ngFor="let star of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" class="bi"
+                                            [class.bi-star-fill]="star <= (movieForm.get('rating')?.value || 0)"
+                                            [class.bi-star]="star > (movieForm.get('rating')?.value || 0)">
+                                        </i>
+                                    </div>
                                 </div>
                                 <div class="invalid-feedback d-block"
                                     *ngIf="movieForm.get('rating')?.invalid && movieForm.get('rating')?.touched">
@@ -141,33 +189,49 @@
                             <!-- Genres -->
                             <div class="form-group mb-4">
                                 <label class="form-label">Genres</label>
-                                <div class="selected-genres mb-3">
-                                    <span *ngFor="let genre of genreArray.controls; let i = index"
-                                        class="selected-genre">
-                                        {{ genre.value }}
-                                        <button type="button" class="btn-remove-genre"
-                                            (click)="removeGenre(i)">×</button>
-                                    </span>
-                                    <span *ngIf="genreArray.length === 0" class="no-genres">No genres selected. Please
-                                        select at least one genre.</span>
-                                </div>
-                                <div class="genre-options">
-                                    <button *ngFor="let option of genreOptions" type="button" class="btn-genre-option"
-                                        [class.selected]="isGenreSelected(option)" (click)="addGenre(option)">
-                                        {{ option }}
-                                    </button>
-                                </div>
-                                <div class="invalid-feedback d-block" *ngIf="genreArray.invalid && genreArray.touched">
-                                    Please select at least one genre.
+                                <div class="genres-container">
+                                    <div class="selected-genres-wrapper">
+                                        <div class="selected-genres">
+                                            <span *ngFor="let genre of genreArray.controls; let i = index"
+                                                class="selected-genre">
+                                                {{ genre.value }}
+                                                <button type="button" class="btn-remove-genre"
+                                                    (click)="removeGenre(i)">×</button>
+                                            </span>
+                                            <span *ngIf="genreArray.length === 0" class="no-genres">
+                                                <i class="bi bi-film"></i> No genres selected. Please select at least
+                                                one genre.
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="genre-options-wrapper">
+                                        <div class="genre-options-label">Available Genres:</div>
+                                        <div class="genre-options">
+                                            <button *ngFor="let option of genreOptions" type="button"
+                                                class="btn-genre-option" [class.selected]="isGenreSelected(option)"
+                                                (click)="addGenre(option)">
+                                                {{ option }}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="invalid-feedback d-block"
+                                        *ngIf="genreArray.invalid && genreArray.touched">
+                                        Please select at least one genre.
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Video URL -->
-                            <div class="form-floating mb-4">
-                                <input type="url" id="videoUrl" class="form-control" formControlName="videoUrl"
-                                    [ngClass]="{'is-invalid': movieForm.get('videoUrl')?.invalid && movieForm.get('videoUrl')?.touched}"
-                                    placeholder="https://example.com/movie.mp4">
-                                <label for="videoUrl">Video URL</label>
+                            <div class="form-group mb-4">
+                                <label for="videoUrl" class="form-label">Video URL</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-film"></i></span>
+                                    <input type="url" id="videoUrl" class="form-control" formControlName="videoUrl"
+                                        placeholder="https://example.com/movie.mp4"
+                                        [ngClass]="{'is-invalid': movieForm.get('videoUrl')?.invalid && movieForm.get('videoUrl')?.touched}">
+                                </div>
                                 <div class="invalid-feedback" *ngIf="movieForm.get('videoUrl')?.errors?.['required']">
                                     Video URL is required.
                                 </div>
@@ -180,7 +244,7 @@
 
                     <div class="col-lg-4">
                         <div class="form-card poster-section">
-                            <h3>Movie Poster</h3>
+                            <h3 class="section-title"><i class="bi bi-image me-2"></i>Movie Poster</h3>
 
                             <!-- Poster Preview -->
                             <div class="poster-preview-container mb-4">
@@ -194,11 +258,14 @@
                             </div>
 
                             <!-- Poster URL -->
-                            <div class="form-floating mb-4">
-                                <input type="url" id="posterUrl" class="form-control" formControlName="posterUrl"
-                                    [ngClass]="{'is-invalid': movieForm.get('posterUrl')?.invalid && movieForm.get('posterUrl')?.touched}"
-                                    placeholder="https://example.com/poster.jpg">
-                                <label for="posterUrl">Poster URL</label>
+                            <div class="form-group mb-4">
+                                <label for="posterUrl" class="form-label">Poster URL</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-link"></i></span>
+                                    <input type="url" id="posterUrl" class="form-control" formControlName="posterUrl"
+                                        placeholder="https://example.com/poster.jpg"
+                                        [ngClass]="{'is-invalid': movieForm.get('posterUrl')?.invalid && movieForm.get('posterUrl')?.touched}">
+                                </div>
                                 <div class="invalid-feedback" *ngIf="movieForm.get('posterUrl')?.errors?.['required']">
                                     Poster URL is required.
                                 </div>

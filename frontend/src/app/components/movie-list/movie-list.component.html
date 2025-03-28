@@ -85,9 +85,14 @@
 
                             <!-- Primary Controls -->
                             <div class="controls-row">
-                                <a [routerLink]="['/movies', movie.id, 'play']" class="btn-circle btn-play">
+                                <a *ngIf="movie.releaseDate !== null" [routerLink]="['/movies', movie.id, 'play']"
+                                    class="btn-circle btn-play">
                                     <i class="bi bi-play-fill"></i>
                                 </a>
+                                <div *ngIf="movie.releaseDate === null" class="btn-circle btn-coming-soon"
+                                    title="Coming Soon">
+                                    <i class="bi bi-hourglass-split"></i>
+                                </div>
                                 <div [routerLink]="['/movies', movie.id]" class="btn-circle btn-info"
                                     (click)="$event.stopPropagation()">
                                     <i class="bi bi-info-circle"></i>
@@ -119,10 +124,13 @@
 
                     <!-- Action buttons only visible when expanded -->
                     <div class="movie-actions" [class.visible]="expandedMovies.get(movie.id) === true">
-                        <a [routerLink]="['/movies', movie.id, 'play']" class="btn-action btn-play" title="Play"
-                            style="color: black;">
+                        <a *ngIf="movie.releaseDate !== null" [routerLink]="['/movies', movie.id, 'play']"
+                            class="btn-action btn-play" title="Play" style="color: black;">
                             <i class="bi bi-play-fill"></i>
                         </a>
+                        <div *ngIf="movie.releaseDate === null" class="btn-action btn-coming-soon" title="Coming Soon">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
                         <a [routerLink]="['/movies', movie.id]" class="btn-action btn-info" title="More Info">
                             <i class="bi bi-info-circle"></i>
                         </a>

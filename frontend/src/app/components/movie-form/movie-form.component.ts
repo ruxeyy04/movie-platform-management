@@ -23,6 +23,7 @@ export class MovieFormComponent implements OnInit {
   loading = false;
   submitting = false;
   posterPreview: string | null = null;
+  isComingSoon = false;
 
   // Predefined list of common movie genres
   genreOptions: string[] = [
@@ -57,7 +58,7 @@ export class MovieFormComponent implements OnInit {
       title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       releaseYear: ['', [Validators.required, Validators.min(1888), Validators.max(this.getCurrentYear() + 5)]],
-      releaseDate: ['', [Validators.required, Validators.maxLength(50)]], // New field with validation
+      releaseDate: ['', [Validators.required, Validators.maxLength(50)]], // Date field
       director: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       genre: this.fb.array([], [Validators.required, Validators.minLength(1)]),
       duration: ['', [Validators.required, Validators.min(1), Validators.max(600)]],
@@ -104,6 +105,16 @@ export class MovieFormComponent implements OnInit {
       movie.genre.forEach(genre => {
         genreFormArray.push(this.fb.control(genre));
       });
+    }
+
+    // Check if the movie has a release date, if not it's "Coming Soon"
+    this.isComingSoon = movie.releaseDate === null;
+
+    // If movie is coming soon, disable release date validation
+    if (this.isComingSoon) {
+      const releaseDateControl = this.movieForm.get('releaseDate');
+      releaseDateControl?.clearValidators();
+      releaseDateControl?.updateValueAndValidity();
     }
 
     // Update form values
@@ -202,5 +213,23 @@ export class MovieFormComponent implements OnInit {
   // Add this method to MovieFormComponent to check if a genre is already selected
   isGenreSelected(genre: string): boolean {
     return this.genreArray.value.includes(genre);
+  }
+
+  // Handle Coming Soon toggle
+  toggleComingSoon(event: Event): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    this.isComingSoon = isChecked;
+
+    const releaseDateControl = this.movieForm.get('releaseDate');
+    if (isChecked) {
+      // When Coming Soon is selected, set releaseDate to null and disable validation
+      releaseDateControl?.setValue(null);
+      releaseDateControl?.clearValidators();
+      releaseDateControl?.updateValueAndValidity();
+    } else {
+      // When Coming Soon is unchecked, restore releaseDate validation
+      releaseDateControl?.setValidators([Validators.required]);
+      releaseDateControl?.updateValueAndValidity();
+    }
   }
 }

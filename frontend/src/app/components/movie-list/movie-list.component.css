@@ -578,3 +578,14 @@
     opacity: 1;
   }
 }
+
+.btn-coming-soon {
+  background-color: #a52222;
+  color: white;
+  cursor: default;
+}
+
+.btn-coming-soon:hover {
+  transform: none;
+  background-color: #a52222;
+}

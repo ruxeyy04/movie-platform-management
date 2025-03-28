@@ -5,6 +5,7 @@ import { MovieService } from '../../services/movie.service';
 import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-movie-details',
@@ -25,7 +26,8 @@ export class MovieDetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private movieService: MovieService,
-    private location: Location
+    private location: Location,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
@@ -70,18 +72,20 @@ export class MovieDetailsComponent implements OnInit {
     if (!this.movie?.id) return;
 
     this.deleteInProgress = true;
+    const movieTitle = this.movie.title;
 
     this.movieService.deleteMovie(this.movie.id).subscribe({
       next: () => {
         this.deleteInProgress = false;
         this.showDeleteModal = false;
+        this.notificationService.success(`"${movieTitle}" has been deleted successfully.`);
         this.router.navigate(['/movies']);
       },
       error: (err) => {
         console.error('Error deleting movie', err);
         this.deleteInProgress = false;
         this.showDeleteModal = false;
-        alert('Failed to delete the movie. Please try again.');
+        this.notificationService.error('Failed to delete the movie. Please try again.');
       }
     });
   }

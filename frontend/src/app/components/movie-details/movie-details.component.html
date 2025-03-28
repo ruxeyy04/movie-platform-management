@@ -50,7 +50,8 @@
                         </div>
 
                         <div class="action-buttons">
-                            <a [routerLink]="['/movies', movie.id, 'play']" class="btn-netflix-play w-100">
+                            <a *ngIf="movie.releaseDate !== null" [routerLink]="['/movies', movie.id, 'play']"
+                                class="btn-netflix-play w-100">
                                 <i class="bi bi-play-fill"></i> Play
                             </a>
                             <div class="secondary-actions">
@@ -103,7 +104,11 @@
                                         </tr>
                                         <tr>
                                             <td>Release Date</td>
-                                            <td>{{ movie.releaseDate }}</td>
+                                            <td>
+                                                <span *ngIf="movie.releaseDate">{{ movie.releaseDate }}</span>
+                                                <span *ngIf="!movie.releaseDate" class="coming-soon-label">Coming
+                                                    Soon</span>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td>Duration</td>
@@ -128,7 +133,7 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <app-confirmation-modal [showModal]="showDeleteModal" [title]="'Delete Movie'"
-        [message]="'Are you sure you want to delete this movie?'" (confirm)="deleteMovie()" (cancel)="cancelDelete()">
+    <app-confirmation-modal [showModal]="showDeleteModal" title="Delete Movie"
+        message="Are you sure you want to delete this movie?" (confirm)="deleteMovie()" (cancel)="cancelDelete()">
     </app-confirmation-modal>
 </div>
