@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { NotificationService, Notification } from '../../services/notification.service';
 
-// Extended notification interface that includes closing state
 interface NotificationWithState extends Notification {
   closing?: boolean;
 }
@@ -52,7 +51,6 @@ export class ToastNotificationsComponent implements OnInit, OnDestroy {
   }
 
   dismiss(id: number): void {
-    // Use the service's animation method instead of handling it here
     this.notificationService.animateThenRemove(id);
   }
 }
