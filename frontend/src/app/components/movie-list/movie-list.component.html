@@ -76,29 +76,51 @@
                 <div class="netflix-movie-card">
                     <div class="movie-poster">
                         <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'">
-                        <div class="movie-rating">{{ movie.rating }}</div>
+                        <div class="movie-rating-badge">{{ movie.rating }}</div>
                         <div class="movie-release-badge" *ngIf="movie.releaseDate === null">COMING SOON</div>
-                    </div>
-                    <div class="movie-details">
-                        <h3 class="movie-title">{{ movie.title }}</h3>
-                        <div class="movie-meta">
-                            <span class="movie-year">{{ movie.releaseYear }}</span>
-                            <span class="movie-duration">{{ movie.duration }} min</span>
-                        </div>
 
-                        <!-- Content only visible on hover -->
-                        <div class="hover-content">
-                            <p class="movie-release-date">{{ movie.releaseDate }}</p>
-                            <div class="movie-genres">
-                                <span *ngFor="let genre of movie.genre" class="genre-badge">{{ genre }}</span>
+                        <!-- Hover Overlay -->
+                        <div class="hover-overlay">
+                            <div class="movie-title-overlay">{{ movie.title }}</div>
+
+                            <!-- Primary Controls -->
+                            <div class="controls-row">
+                                <a [routerLink]="['/movies', movie.id, 'play']" class="btn-circle btn-play">
+                                    <i class="bi bi-play-fill"></i>
+                                </a>
+                                <div [routerLink]="['/movies', movie.id]" class="btn-circle btn-info"
+                                    (click)="$event.stopPropagation()">
+                                    <i class="bi bi-info-circle"></i>
+                                </div>
+                                <div class="expand-control"
+                                    (click)="toggleMovieActions(movie); $event.stopPropagation()">
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
                             </div>
-                            <p class="movie-description">{{ movie.description }}</p>
+
+                            <!-- Movie Metadata -->
+                            <div class="movie-metadata">
+                                <div class="movie-year-rating">
+                                    <span class="rating-age">{{ movie.rating >= 8 ? '16+' : '13+' }}</span>
+                                    <span>{{ movie.duration }} min</span>
+                                    <span>{{ movie.releaseYear }}</span>
+                                </div>
+
+                                <!-- Genres -->
+                                <div class="movie-genres-overlay">
+                                    <span *ngFor="let genre of movie.genre.slice(0, 3); let i = index"
+                                        class="genre-badge">
+                                        {{ genre }}{{ i < (movie.genre.length < 3 ? movie.genre.length - 1 : 2) ? ' • '
+                                            : '' }} </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Movie actions as footer -->
-                    <div class="movie-actions">
-                        <a [routerLink]="['/movies', movie.id, 'play']" class="btn-action btn-play" title="Play">
+                    <!-- Action buttons only visible when expanded -->
+                    <div class="movie-actions" [class.visible]="expandedMovies.get(movie.id) === true">
+                        <a [routerLink]="['/movies', movie.id, 'play']" class="btn-action btn-play" title="Play"
+                            style="color: black;">
                             <i class="bi bi-play-fill"></i>
                         </a>
                         <a [routerLink]="['/movies', movie.id]" class="btn-action btn-info" title="More Info">

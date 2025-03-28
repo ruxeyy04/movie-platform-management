@@ -29,6 +29,9 @@ export class MovieListComponent implements OnInit, OnDestroy {
   slidingDirection = 'left'; // For animation direction
   animating = false;
 
+  // Add a map to track which movies have their actions visible
+  expandedMovies = new Map<any, boolean>();
+
   constructor(
     private movieService: MovieService,
     private notificationService: NotificationService
@@ -165,5 +168,16 @@ export class MovieListComponent implements OnInit, OnDestroy {
         this.notificationService.error('Failed to delete the movie. Please try again.');
       }
     });
+  }
+
+  // Add Math to the component class
+  Math = Math;
+
+  // Toggle movie actions visibility when clicking expand button
+  toggleMovieActions(movie: any): void {
+    console.log('Toggle actions for movie:', movie.id);
+    const currentValue = this.expandedMovies.get(movie.id) || false;
+    this.expandedMovies.set(movie.id, !currentValue);
+    console.log('Expanded state is now:', this.expandedMovies.get(movie.id));
   }
 }
