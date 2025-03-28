@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { FormControl } from '@angular/forms';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']
+  styleUrls: ['./header.component.css'],
+  standalone: true,
+  imports: [CommonModule, RouterLink, RouterLinkActive, ReactiveFormsModule]
 })
 export class HeaderComponent implements OnInit {
   title = 'Movie Theater';

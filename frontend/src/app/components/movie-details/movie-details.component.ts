@@ -1,13 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Movie } from '../../models/movie.model';
 import { MovieService } from '../../services/movie.service';
 import { Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-movie-details',
   templateUrl: './movie-details.component.html',
-  styleUrls: ['./movie-details.component.css']
+  styleUrls: ['./movie-details.component.css'],
+  standalone: true,
+  imports: [CommonModule, RouterLink, ConfirmationModalComponent]
 })
 export class MovieDetailsComponent implements OnInit {
   movie: Movie | null = null;

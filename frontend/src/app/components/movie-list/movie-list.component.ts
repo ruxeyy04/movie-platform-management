@@ -1,11 +1,16 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Movie } from '../../models/movie.model';
 import { MovieService } from '../../services/movie.service';
+import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-movie-list',
   templateUrl: './movie-list.component.html',
-  styleUrls: ['./movie-list.component.css']
+  styleUrls: ['./movie-list.component.css'],
+  standalone: true,
+  imports: [CommonModule, RouterLink, ConfirmationModalComponent]
 })
 export class MovieListComponent implements OnInit {
   movies: Movie[] = [];

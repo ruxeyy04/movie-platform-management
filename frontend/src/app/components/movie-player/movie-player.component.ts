@@ -1,13 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Movie } from '../../models/movie.model';
 import { MovieService } from '../../services/movie.service';
 import { Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-movie-player',
   templateUrl: './movie-player.component.html',
-  styleUrls: ['./movie-player.component.css']
+  styleUrls: ['./movie-player.component.css'],
+  standalone: true,
+  imports: [CommonModule, RouterLink]
 })
 export class MoviePlayerComponent implements OnInit {
   movie: Movie | null = null;

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { MovieService } from '../../services/movie.service';
 import { Movie } from '../../models/movie.model';
 import { Location } from '@angular/common';
@@ -8,7 +9,9 @@ import { Location } from '@angular/common';
 @Component({
   selector: 'app-movie-form',
   templateUrl: './movie-form.component.html',
-  styleUrls: ['./movie-form.component.css']
+  styleUrls: ['./movie-form.component.css'],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink]
 })
 export class MovieFormComponent implements OnInit {
   movieForm!: FormGroup;

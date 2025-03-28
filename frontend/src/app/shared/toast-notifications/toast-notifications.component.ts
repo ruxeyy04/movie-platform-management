@@ -1,11 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NotificationService, Notification } from '../../services/notification.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-toast-notifications',
   templateUrl: './toast-notifications.component.html',
-  styleUrls: ['./toast-notifications.component.css']
+  styleUrls: ['./toast-notifications.component.css'],
+  standalone: true,
+  imports: [CommonModule]
 })
 export class ToastNotificationsComponent implements OnInit, OnDestroy {
   notifications: Notification[] = [];
