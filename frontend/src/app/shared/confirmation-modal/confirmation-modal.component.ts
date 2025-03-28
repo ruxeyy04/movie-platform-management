@@ -16,16 +16,30 @@ export class ConfirmationModalComponent {
   @Input() confirmButtonClass: string = 'btn-danger';
   @Input() showModal: boolean = false;
 
+  isClosing: boolean = false;
+
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 
   onConfirm(): void {
-    this.confirm.emit();
-    this.showModal = false;
+    this.startCloseAnimation();
+    setTimeout(() => {
+      this.confirm.emit();
+      this.showModal = false;
+      this.isClosing = false;
+    }, 300); // Match animation duration
   }
 
   onCancel(): void {
-    this.cancel.emit();
-    this.showModal = false;
+    this.startCloseAnimation();
+    setTimeout(() => {
+      this.cancel.emit();
+      this.showModal = false;
+      this.isClosing = false;
+    }, 300); // Match animation duration
+  }
+
+  private startCloseAnimation(): void {
+    this.isClosing = true;
   }
 }

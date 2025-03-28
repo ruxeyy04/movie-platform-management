@@ -1,6 +1,6 @@
-<div class="netflix-modal-backdrop" *ngIf="showModal" (click)="onCancel()"></div>
+<div class="netflix-modal-backdrop" *ngIf="showModal" [class.closing]="isClosing" (click)="onCancel()"></div>
 <div class="netflix-modal-container" *ngIf="showModal">
-    <div class="netflix-modal-content" (click)="$event.stopPropagation()">
+    <div class="netflix-modal-content" [class.closing]="isClosing" (click)="$event.stopPropagation()">
         <div class="netflix-modal-header">
             <h5 class="netflix-modal-title">{{ title }}</h5>
             <button type="button" class="netflix-close-button" aria-label="Close" (click)="onCancel()">
