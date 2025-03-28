@@ -236,6 +236,8 @@
   transition: all 0.3s ease;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
   background-color: var(--bg-light);
+  display: flex;
+  flex-direction: column;
 }
 
 .netflix-movie-card:hover {
@@ -287,13 +289,12 @@
 .movie-details {
   padding: 15px;
   position: relative;
-  transition: max-height 0.3s ease;
-  max-height: 100px;
-  overflow: hidden;
+  flex: 1;
+  min-height: 80px; /* Ensure consistent height for title and basic info */
 }
 
 .netflix-movie-card:hover .movie-details {
-  max-height: 500px;
+  max-height: unset;
 }
 
 .movie-title {
@@ -332,6 +333,19 @@
   font-size: 0.8rem;
 }
 
+/* Content only visible on hover */
+.hover-content {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease 0.1s; /* Slight delay for better effect */
+}
+
+.netflix-movie-card:hover .hover-content {
+  opacity: 1;
+  max-height: 500px;
+}
+
 .movie-description {
   font-size: 0.9rem;
   line-height: 1.5;
@@ -340,25 +354,17 @@
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  opacity: 0;
-  height: 0;
-  transition: all 0.3s ease;
-}
-
-.netflix-movie-card:hover .movie-description {
-  opacity: 1;
-  height: auto;
 }
 
 .movie-actions {
   display: flex;
-  justify-content: space-between;
-  position: absolute;
-  bottom: 15px;
-  left: 15px;
-  right: 15px;
+  justify-content: space-around;
+  gap: 10px;
+  padding: 12px 15px;
+  background-color: rgba(20, 20, 20, 0.8); /* Darker background for better contrast */
+  margin-top: auto;
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(100%);
   transition: all 0.3s ease;
 }
 
@@ -376,6 +382,7 @@
   justify-content: center;
   color: white;
   transition: all 0.2s;
+  flex: 0 0 auto;
 }
 
 .btn-action:hover {

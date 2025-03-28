@@ -45,7 +45,7 @@ export class NotificationService {
         // Auto-remove after 5 seconds
         setTimeout(() => {
             this.remove(id);
-        }, 1000);
+        }, 5000);
     }
 
     remove(id: number): void {

@@ -128,8 +128,7 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <!-- Delete Confirmation Modal -->
-    <app-confirmation-modal [showModal]="showDeleteModal" title="Delete Movie"
-        message="Are you sure you want to delete this movie?" (confirm)="deleteMovie()" (cancel)="cancelDelete()">
+    <app-confirmation-modal [showModal]="showDeleteModal" [title]="'Delete Movie'"
+        [message]="'Are you sure you want to delete this movie?'" (confirm)="deleteMovie()" (cancel)="cancelDelete()">
     </app-confirmation-modal>
 </div>

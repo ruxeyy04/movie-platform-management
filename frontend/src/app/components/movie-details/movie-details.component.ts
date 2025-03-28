@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Movie } from '../../models/movie.model';
 import { MovieService } from '../../services/movie.service';
@@ -11,7 +11,8 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
   templateUrl: './movie-details.component.html',
   styleUrls: ['./movie-details.component.css'],
   standalone: true,
-  imports: [CommonModule, RouterLink, ConfirmationModalComponent]
+  imports: [CommonModule, RouterLink, ConfirmationModalComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class MovieDetailsComponent implements OnInit {
   movie: Movie | null = null;

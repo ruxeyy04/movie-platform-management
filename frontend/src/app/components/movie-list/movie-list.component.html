@@ -85,25 +85,31 @@
                             <span class="movie-year">{{ movie.releaseYear }}</span>
                             <span class="movie-duration">{{ movie.duration }} min</span>
                         </div>
-                        <p class="movie-release-date">{{ movie.releaseDate }}</p>
-                        <div class="movie-genres">
-                            <span *ngFor="let genre of movie.genre" class="genre-badge">{{ genre }}</span>
+
+                        <!-- Content only visible on hover -->
+                        <div class="hover-content">
+                            <p class="movie-release-date">{{ movie.releaseDate }}</p>
+                            <div class="movie-genres">
+                                <span *ngFor="let genre of movie.genre" class="genre-badge">{{ genre }}</span>
+                            </div>
+                            <p class="movie-description">{{ movie.description }}</p>
                         </div>
-                        <p class="movie-description">{{ movie.description }}</p>
-                        <div class="movie-actions">
-                            <a [routerLink]="['/movies', movie.id, 'play']" class="btn-action btn-play">
-                                <i class="bi bi-play-fill"></i>
-                            </a>
-                            <a [routerLink]="['/movies', movie.id]" class="btn-action btn-info">
-                                <i class="bi bi-info-circle"></i>
-                            </a>
-                            <a [routerLink]="['/movies', movie.id, 'edit']" class="btn-action btn-edit">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button (click)="confirmDelete(movie)" class="btn-action btn-delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
+                    </div>
+
+                    <!-- Movie actions as footer -->
+                    <div class="movie-actions">
+                        <a [routerLink]="['/movies', movie.id, 'play']" class="btn-action btn-play" title="Play">
+                            <i class="bi bi-play-fill"></i>
+                        </a>
+                        <a [routerLink]="['/movies', movie.id]" class="btn-action btn-info" title="More Info">
+                            <i class="bi bi-info-circle"></i>
+                        </a>
+                        <a [routerLink]="['/movies', movie.id, 'edit']" class="btn-action btn-edit" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <button (click)="confirmDelete(movie)" class="btn-action btn-delete" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                 </div>
             </div>
