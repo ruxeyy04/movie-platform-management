@@ -2,27 +2,28 @@
     <!-- Hero Banner -->
     <div class="hero-banner" *ngIf="!loading && !error && featuredMovies.length > 0">
         <div class="hero-content">
-            <div class="container">
+            <div class="container position-relative">
                 <div class="hero-details"
                     [ngClass]="{'slide-in-left': slidingDirection === 'left' && animating, 'slide-in-right': slidingDirection === 'right' && animating}">
                     <h1 class="hero-title">{{ getCurrentFeaturedMovie().title }}</h1>
                     <div class="hero-meta">
-                        <span class="hero-year">{{ getCurrentFeaturedMovie().releaseYear }}</span>
+                        <span class="hero-year" *ngIf="getCurrentFeaturedMovie().releaseYear">{{
+                            getCurrentFeaturedMovie().releaseYear }}</span>
                         <span class="hero-rating">{{ getCurrentFeaturedMovie().rating }}/10</span>
                         <span class="hero-duration">{{ getCurrentFeaturedMovie().duration }} min</span>
                     </div>
                     <p class="hero-description">{{ getCurrentFeaturedMovie().description }}</p>
                     <div class="hero-genres">
-                        <span *ngFor="let genre of getCurrentFeaturedMovie().genre" class="hero-genre-badge">{{ genre
-                            }}</span>
+                        <span *ngFor="let genre of getCurrentFeaturedMovie().genre?.slice(0, 4)"
+                            class="hero-genre-badge">{{ genre }}</span>
                     </div>
                     <div class="hero-actions">
                         <a [routerLink]="['/movies', getCurrentFeaturedMovie().id, 'play']"
                             class="btn btn-netflix-play">
-                            <i class="bi bi-play-fill"></i> Play
+                            <i class="bi bi-play-fill"></i> <span>Play</span>
                         </a>
                         <a [routerLink]="['/movies', getCurrentFeaturedMovie().id]" class="btn btn-netflix-more">
-                            <i class="bi bi-info-circle"></i> More Info
+                            <i class="bi bi-info-circle"></i> <span>More Info</span>
                         </a>
                     </div>
                 </div>
@@ -30,19 +31,16 @@
             <div class="hero-overlay"></div>
             <div class="hero-image"
                 [ngClass]="{'slide-bg-left': slidingDirection === 'left' && animating, 'slide-bg-right': slidingDirection === 'right' && animating}"
-                [style.background-image]="'url(' + getCurrentFeaturedMovie().posterUrl + ')'"></div>
-
-
+                [style.backgroundImage]="'url(' + getCurrentFeaturedMovie().posterUrl + ')'"></div>
         </div>
     </div>
-
 
     <div class="container pb-5">
         <!-- Page Title and Add Button -->
         <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
             <h2 class="section-title">All Movies</h2>
             <a routerLink="/movies/new" class="btn btn-netflix-add">
-                <i class="bi bi-plus-lg me-2"></i>Add New Movie
+                <i class="bi bi-plus-lg me-1"></i>Add New Movie
             </a>
         </div>
 
@@ -75,13 +73,14 @@
             <div *ngFor="let movie of movies" class="netflix-movie-item">
                 <div class="netflix-movie-card">
                     <div class="movie-poster">
-                        <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'">
+                        <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'" loading="lazy">
                         <div class="movie-rating-badge">{{ movie.rating }}</div>
-                        <div class="movie-release-badge" *ngIf="movie.releaseDate === null">COMING SOON</div>
+                        <div class="movie-release-badge" *ngIf="!movie.releaseDate || movie.releaseDate === null">COMING
+                            SOON</div>
 
                         <!-- Hover Overlay -->
                         <div class="hover-overlay">
-                            <div class="movie-title-overlay">{{ movie.title }}</div>
+                            <div class="movie-title-overlay text-truncate">{{ movie.title }}</div>
 
                             <!-- Primary Controls -->
                             <div class="controls-row">
@@ -89,8 +88,8 @@
                                     class="btn-circle btn-play">
                                     <i class="bi bi-play-fill"></i>
                                 </a>
-                                <div *ngIf="movie.releaseDate === null" class="btn-circle btn-coming-soon"
-                                    title="Coming Soon">
+                                <div *ngIf="!movie.releaseDate || movie.releaseDate === null"
+                                    class="btn-circle btn-coming-soon" title="Coming Soon">
                                     <i class="bi bi-hourglass-split"></i>
                                 </div>
                                 <div [routerLink]="['/movies', movie.id]" class="btn-circle btn-info"
@@ -108,15 +107,14 @@
                                 <div class="movie-year-rating">
                                     <span class="rating-age">{{ movie.rating >= 8 ? '16+' : '13+' }}</span>
                                     <span>{{ movie.duration }} min</span>
-                                    <span>{{ movie.releaseYear }}</span>
+                                    <span *ngIf="movie.releaseYear">{{ movie.releaseYear }}</span>
                                 </div>
 
                                 <!-- Genres -->
                                 <div class="movie-genres-overlay">
-                                    <span *ngFor="let genre of movie.genre.slice(0, 3); let i = index"
+                                    <span *ngFor="let genre of movie.genre.slice(0, 2); let i = index"
                                         class="genre-badge">
-                                        {{ genre }}{{ i < (movie.genre.length < 3 ? movie.genre.length - 1 : 2) ? ' • '
-                                            : '' }} </span>
+                                        {{ genre }}{{ i < 1 ? ' • ' : '' }} </span>
                                 </div>
                             </div>
                         </div>
@@ -128,7 +126,8 @@
                             class="btn-action btn-play" title="Play" style="color: black;">
                             <i class="bi bi-play-fill"></i>
                         </a>
-                        <div *ngIf="movie.releaseDate === null" class="btn-action btn-coming-soon" title="Coming Soon">
+                        <div *ngIf="!movie.releaseDate || movie.releaseDate === null" class="btn-action btn-coming-soon"
+                            title="Coming Soon">
                             <i class="bi bi-hourglass-split"></i>
                         </div>
                         <a [routerLink]="['/movies', movie.id]" class="btn-action btn-info" title="More Info">

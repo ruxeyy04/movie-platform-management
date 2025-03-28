@@ -90,8 +90,8 @@ export class MovieListComponent implements OnInit, OnDestroy {
       this.rotationInterval.unsubscribe();
     }
 
-    // Rotate every 5 seconds
-    this.rotationInterval = interval(5000).subscribe(() => {
+    // Rotate every 7 seconds (giving more time to view each movie)
+    this.rotationInterval = interval(7000).subscribe(() => {
       this.rotateFeaturedMovie();
     });
   }
@@ -101,17 +101,22 @@ export class MovieListComponent implements OnInit, OnDestroy {
 
     this.animating = true;
 
-    // Randomly determine the sliding direction
+    // Determine the sliding direction
     this.slidingDirection = Math.random() > 0.5 ? 'left' : 'right';
 
-    // Choose next index
+    // Prepare the next index before animation completes
     const nextIndex = this.getNextRandomIndex();
-    this.currentFeaturedIndex = nextIndex;
 
-    // Reset animation flag after animation completes
+    // Use setTimeout to match our animation timing
     setTimeout(() => {
-      this.animating = false;
-    }, 1000); // Match this with CSS transition duration
+      // Update the index after the "out" phase of the animation
+      this.currentFeaturedIndex = nextIndex;
+
+      // Reset animation flag after animation completes
+      setTimeout(() => {
+        this.animating = false;
+      }, 400); // Second half of animation duration
+    }, 400); // First half of animation duration
   }
 
   getNextRandomIndex(): number {

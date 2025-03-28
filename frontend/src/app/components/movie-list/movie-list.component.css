@@ -10,6 +10,7 @@
   position: relative;
   overflow: hidden;
   margin-bottom: 40px;
+  border-radius: 10px;
 }
 
 .hero-content {
@@ -29,6 +30,7 @@
   background-size: cover;
   background-position: center 20%;
   z-index: -1;
+  border-radius: 10px;
 }
 
 .hero-overlay {
@@ -442,25 +444,245 @@
 
 @media (max-width: 768px) {
   .hero-banner {
-    height: 60vh;
+    height: auto;
+    min-height: 500px;
+  }
+
+  .hero-content {
+    align-items: center;
   }
 
   .hero-details {
     width: 100%;
-    padding-bottom: 40px;
+    padding: 20px 15px 60px;
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+    max-height: 100px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+  }
+
+  .hero-meta {
+    font-size: 0.9rem;
+    gap: 10px;
+  }
+
+  .hero-genres {
+    gap: 6px;
+    margin-bottom: 15px;
+  }
+
+  .hero-genre-badge {
+    padding: 3px 8px;
+    font-size: 0.8rem;
+  }
+
+  .hero-actions {
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .btn-netflix-play,
+  .btn-netflix-more {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    min-width: 80px;
+  }
+
+  .btn-netflix-play i,
+  .btn-netflix-more i {
+    font-size: 1rem;
+  }
+  
+  /* Hide play and info buttons in action menu on mobile */
+  .movie-actions .btn-play,
+  .movie-actions .btn-info,
+  .movie-actions .btn-coming-soon {
+    display: none;
+  }
+  
+  /* Re-align remaining action buttons */
+  .movie-actions {
+    justify-content: space-around;
+    gap: 30px;
+    padding: 8px 15px;
+  }
+
+  .btn-action.btn-edit,
+  .btn-action.btn-delete {
+    width: 38px;
+    height: 38px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .section-title {
+    font-size: 1.5rem;
   }
 
   .netflix-movies-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .netflix-movie-item:hover {
+    transform: scale(1.1);
+  }
+
+  .netflix-movie-card {
+    border-radius: 6px;
   }
 
   .movie-poster {
-    height: 300px;
+    height: auto;
+    padding-bottom: 150%;
+  }
+
+  /* Better hover experience for touch devices */
+  .hover-overlay {
+    opacity: 0;
+    padding: 8px;
+  }
+
+  .movie-title-overlay {
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+  }
+
+  .btn-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+  }
+
+  .movie-rating-badge,
+  .movie-release-badge {
+    font-size: 0.7rem;
+    padding: 1px 4px;
+  }
+
+  .btn-action i {
+    font-size: 1rem;
+  }
+  
+  .btn-action.btn-edit,
+  .btn-action.btn-delete {
+    opacity: 0.9;
+  }
+  
+  .btn-action.btn-edit:active,
+  .btn-action.btn-delete:active {
+    transform: scale(0.95);
+  }
+
+  .movie-year-rating {
+    font-size: 0.75rem;
+    gap: 6px;
+  }
+
+  .rating-age {
+    font-size: 0.7rem;
+  }
+
+  .btn-netflix-add {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Specific adjustments for small phones */
+@media (max-width: 480px) {
+  .netflix-browse {
+    padding-top: 60px;
+  }
+
+  .hero-banner {
+    min-height: 400px;
+    margin-bottom: 20px;
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+  }
+
+  .hero-description {
+    -webkit-line-clamp: 3;
+    font-size: 0.9rem;
+  }
+
+  .netflix-movies-grid {
+    gap: 8px;
+  }
+
+  .section-title {
+    font-size: 1.3rem;
+  }
+
+  .d-flex.justify-content-between.align-items-center {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+
+  .d-flex.justify-content-between.align-items-center .btn-netflix-add {
+    align-self: stretch;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .btn-netflix-play,
+  .btn-netflix-more {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    min-width: 70px;
+  }
+  
+  .hero-actions {
+    margin-top: 15px;
+  }
+
+  /* Adjust button text for very small screens */
+  .btn-netflix-play span,
+  .btn-netflix-more span {
+    font-size: 0.75rem;
+  }
+  
+  /* Ensure action buttons are properly spaced and sized */
+  .movie-actions {
+    gap: 40px;
+  }
+  
+  .btn-action.btn-edit,
+  .btn-action.btn-delete {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* For extremely small screens */
+@media (max-width: 360px) {
+  .hero-actions {
+    flex-direction: column;
+    width: 60%;
+    margin: 12px auto 0;
+  }
+  
+  .btn-netflix-play,
+  .btn-netflix-more {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 8px;
   }
 }
 
@@ -468,17 +690,18 @@
 .hero-details {
   width: 50%;
   padding-bottom: 80px;
-  transition: transform 1s ease, opacity 1s ease;
   opacity: 1;
   transform: translateX(0);
+  transition: transform 0.5s ease, opacity 0.5s ease; /* Faster transition */
+  will-change: transform, opacity; /* Performance optimization */
 }
 
 .slide-in-left {
-  animation: slideInFromRight 1s ease forwards;
+  animation: slideInFromRight 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 .slide-in-right {
-  animation: slideInFromLeft 1s ease forwards;
+  animation: slideInFromLeft 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 .hero-image {
@@ -490,15 +713,70 @@
   background-size: cover;
   background-position: center 20%;
   z-index: -1;
-  transition: opacity 1s ease;
+  transition: opacity 0.4s ease;
+  will-change: opacity, transform; /* Performance optimization */
 }
 
-.slide-bg-left {
-  animation: fadeOut 0.5s ease forwards, fadeIn 0.5s ease 0.5s forwards;
+.slide-bg-left, .slide-bg-right {
+  animation: crossFade 0.8s ease forwards;
 }
 
-.slide-bg-right {
-  animation: fadeOut 0.5s ease forwards, fadeIn 0.5s ease 0.5s forwards;
+/* Streamlined keyframes for smoother animation */
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  40% {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  40% {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes crossFade {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  60% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Hero Indicators */
@@ -523,62 +801,6 @@
   background-color: white;
 }
 
-@keyframes slideInFromRight {
-  0% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  50% {
-    transform: translateX(-50px);
-    opacity: 0;
-  }
-  51% {
-    transform: translateX(50px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideInFromLeft {
-  0% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  50% {
-    transform: translateX(50px);
-    opacity: 0;
-  }
-  51% {
-    transform: translateX(-50px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 .btn-coming-soon {
   background-color: #a52222;
   color: white;
@@ -588,4 +810,81 @@
 .btn-coming-soon:hover {
   transform: none;
   background-color: #a52222;
+}
+
+/* Mobile-specific enhancements */
+@media (hover: none) {
+  .netflix-movie-item:hover {
+    transform: none;
+  }
+  
+  .hover-overlay {
+    opacity: 1;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.3) 70%, transparent 100%);
+  }
+  
+  .movie-metadata {
+    max-height: 65px;
+    overflow: hidden;
+  }
+  
+  .btn-circle {
+    /* Larger touch targets for mobile */
+    min-width: 36px;
+    min-height: 36px;
+  }
+  
+  .expand-control {
+    min-width: 36px;
+    min-height: 36px;
+  }
+  
+  /* Show only essential info on small screens */
+  .movie-title-overlay {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* Enhance action buttons for touch targets */
+  .btn-action i {
+    font-size: 1rem;
+  }
+  
+  /* Better visibility for buttons on touch devices */
+  .btn-action.btn-edit,
+  .btn-action.btn-delete {
+    opacity: 0.9;
+  }
+  
+  .btn-action.btn-edit:active,
+  .btn-action.btn-delete:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Override any transforms that make elements difficult to tap on small screens */
+@media (max-width: 480px) {
+  .netflix-movies-grid {
+    margin: 0 -5px;
+  }
+  
+  .btn-netflix-play, 
+  .btn-netflix-more {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  
+  /* Fix for movie card shadow being cut off */
+  .netflix-movie-item {
+    padding: 0 2px 5px;
+    margin-bottom: 5px;
+  }
+  
+  /* Better touch targets */
+  .movie-actions .btn-action {
+    min-width: 40px;
+    min-height: 40px;
+  }
 }
