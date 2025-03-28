@@ -1,11 +1,52 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Movie } from '../../models/movie.model';
+import { MovieService } from '../../services/movie.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-movie-player',
-  imports: [],
   templateUrl: './movie-player.component.html',
-  styleUrl: './movie-player.component.css'
+  styleUrls: ['./movie-player.component.css']
 })
-export class MoviePlayerComponent {
+export class MoviePlayerComponent implements OnInit {
+  movie: Movie | null = null;
+  loading = true;
+  error = false;
 
+  constructor(
+    private route: ActivatedRoute,
+    private movieService: MovieService,
+    private location: Location
+  ) { }
+
+  ngOnInit(): void {
+    this.getMovie();
+  }
+
+  getMovie(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (isNaN(id)) {
+      this.error = true;
+      this.loading = false;
+      return;
+    }
+
+    this.movieService.getMovie(id)
+      .subscribe({
+        next: (movie) => {
+          this.movie = movie;
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Error fetching movie for playback', err);
+          this.error = true;
+          this.loading = false;
+        }
+      });
+  }
+
+  goBack(): void {
+    this.location.back();
+  }
 }

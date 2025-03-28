@@ -1,1 +1,100 @@
-<p>movie-details works!</p>
+<div class="movie-details fade-in">
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading movie details...</p>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Failed to load movie details. The movie might not exist or there was a server error.
+        <div class="mt-3">
+            <button (click)="goBack()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Go Back
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && !error && movie" class="container">
+        <div class="mb-4">
+            <button (click)="goBack()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Movies
+            </button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="poster-container">
+                    <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'" class="img-fluid rounded shadow">
+                    <div class="movie-rating">
+                        <div class="rating-badge">
+                            <span class="rating-value">{{ movie.rating }}</span>
+                            <span class="rating-max">/10</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 action-buttons">
+                    <a [routerLink]="['/movies', movie.id, 'play']" class="btn btn-success w-100 mb-2">
+                        <i class="bi bi-play-fill me-2"></i>Watch Movie
+                    </a>
+                    <div class="d-flex gap-2">
+                        <a [routerLink]="['/movies', movie.id, 'edit']" class="btn btn-outline-primary flex-grow-1">
+                            <i class="bi bi-pencil me-1"></i>Edit
+                        </a>
+                        <button (click)="deleteMovie()" class="btn btn-outline-danger flex-grow-1">
+                            <i class="bi bi-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h1 class="movie-title">{{ movie.title }} <span class="movie-year">({{ movie.releaseYear
+                                }})</span></h1>
+
+                        <div class="movie-genres mb-3">
+                            <span *ngFor="let genre of movie.genre" class="badge bg-secondary me-1">{{ genre }}</span>
+                            <span class="badge bg-light text-dark">{{ movie.duration }} min</span>
+                        </div>
+
+                        <div class="movie-director mb-4">
+                            <strong>Director:</strong> {{ movie.director }}
+                        </div>
+
+                        <div class="movie-description mb-4">
+                            <h4>Synopsis</h4>
+                            <p>{{ movie.description }}</p>
+                        </div>
+
+                        <div class="movie-details-section">
+                            <h4>Details</h4>
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">Release Year</th>
+                                        <td>{{ movie.releaseYear }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Duration</th>
+                                        <td>{{ movie.duration }} minutes</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Rating</th>
+                                        <td>{{ movie.rating }} / 10</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Genres</th>
+                                        <td>{{ movie.genre.join(', ') }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,91 @@
+.movie-details {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.poster-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.25rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.movie-rating {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.rating-badge {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.rating-value {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.rating-max {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.movie-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.movie-year {
+  font-weight: 400;
+  color: #6c757d;
+}
+
+.movie-genres {
+  margin-bottom: 1rem;
+}
+
+.movie-director {
+  font-style: italic;
+}
+
+.movie-description {
+  line-height: 1.6;
+}
+
+.action-buttons {
+  background-color: white;
+  border-radius: 0.25rem;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .movie-title {
+    font-size: 1.5rem;
+  }
+
+  .action-buttons {
+    margin-bottom: 2rem;
+  }
+}

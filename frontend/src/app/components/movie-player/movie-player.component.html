@@ -1,1 +1,77 @@
-<p>movie-player works!</p>
+<div class="movie-player-container fade-in">
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading video player...</p>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Failed to load the movie for playback. The movie might not exist or there was a server error.
+        <div class="mt-3">
+            <button (click)="goBack()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Go Back
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && !error && movie" class="container">
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <button (click)="goBack()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back
+            </button>
+            <h2 class="movie-title mb-0">{{ movie.title }}</h2>
+            <div></div> <!-- Empty div for flexbox spacing -->
+        </div>
+
+        <div class="video-container">
+            <div class="ratio ratio-16x9">
+                <!-- For demo purposes using a fallback image. In production, replace with actual video player -->
+                <div class="demo-player d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-film" style="font-size: 5rem;"></i>
+                    <h4 class="mt-3">Video Player Demo</h4>
+                    <p class="text-center">This is a placeholder for the actual video player.<br>
+                        In a production environment, this would be replaced with a video element or a video player
+                        component.</p>
+                    <div class="mt-3 text-center">
+                        <div class="player-controls">
+                            <button class="btn btn-light btn-player me-2"><i
+                                    class="bi bi-skip-backward-fill"></i></button>
+                            <button class="btn btn-primary btn-player me-2"><i class="bi bi-play-fill"></i></button>
+                            <button class="btn btn-light btn-player"><i class="bi bi-skip-forward-fill"></i></button>
+                        </div>
+                        <div class="progress mt-3">
+                            <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25"
+                                aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <p class="mt-2"><small>00:15 / 01:01</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="movie-info mt-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4>Now Playing</h4>
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <img [src]="movie.posterUrl" alt="Movie poster" class="player-thumbnail">
+                        </div>
+                        <div>
+                            <h5>{{ movie.title }} ({{ movie.releaseYear }})</h5>
+                            <p>{{ movie.description }}</p>
+                            <p><strong>Director:</strong> {{ movie.director }}</p>
+                            <p><strong>Duration:</strong> {{ movie.duration }} minutes</p>
+                            <div>
+                                <span *ngFor="let genre of movie.genre" class="badge bg-secondary me-1">{{ genre
+                                    }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
