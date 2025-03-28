@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -12,11 +12,12 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
   imports: [CommonModule, RouterLink, RouterLinkActive, ReactiveFormsModule]
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  title = 'Movie Theater';
+  title = 'MovieFlix';
   searchControl = new FormControl('');
   searchActive = false;
   showMobileMenu = false;
   isBrowser: boolean;
+  isScrolled = false;
 
   constructor(@Inject(PLATFORM_ID) private platformId: object, private router: Router) {
     // Check if running in the browser
@@ -24,9 +25,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (this.isBrowser) {
-      window.addEventListener('scroll', this.onWindowScroll.bind(this));
-    }
+    this.onWindowScroll();
 
     this.searchControl.valueChanges
       .pipe(
@@ -40,9 +39,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.isBrowser) {
-      window.removeEventListener('scroll', this.onWindowScroll.bind(this));
-    }
+    // No need for explicit event handler cleanup with @HostListener
   }
 
   toggleSearch(): void {
@@ -53,17 +50,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.showMobileMenu = !this.showMobileMenu;
   }
 
+  @HostListener('window:scroll')
   onWindowScroll(): void {
     if (!this.isBrowser) return;
 
-    const header = document.querySelector('.netflix-header');
-    if (header) {
-      if (window.scrollY > 50) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-    }
+    this.isScrolled = window.scrollY > 20;
   }
 
   handleSearch(event: Event): void {
@@ -71,8 +62,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const query = this.searchControl.value;
     console.log('Search submitted:', query);
     // Implement search functionality here
+
+    if (query) {
+      // Navigate to search results or filter current view
+      this.searchActive = false;
+    }
   }
+
   goToHome(): void {
     this.router.navigate(['/']);
+    this.showMobileMenu = false;
   }
 }

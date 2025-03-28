@@ -1,25 +1,53 @@
-<footer class="bg-dark text-white py-4 mt-4">
+<footer class="netflix-footer">
     <div class="container">
-        <div class="row">
-            <div class="col-md-6 mb-3 mb-md-0">
-                <h5>Movie Theater</h5>
-                <p class="text-muted mb-2">Your one-stop destination for movies</p>
-                <p class="small text-muted mb-0">&copy; {{ currentYear }} Movie Theater. All rights reserved.</p>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <h2>MovieFlix</h2>
             </div>
-            <div class="col-md-3 mb-3 mb-md-0">
-                <h6>Quick Links</h6>
-                <ul class="list-unstyled">
-                    <li><a routerLink="/movies" class="text-decoration-none text-light">All Movies</a></li>
-                    <li><a routerLink="/movies/new" class="text-decoration-none text-light">Add Movie</a></li>
-                </ul>
+            <div class="footer-links">
+                <div class="footer-links-column">
+                    <h5>Navigation</h5>
+                    <ul>
+                        <li><a routerLink="/movies">Home</a></li>
+                        <li><a routerLink="/movies">Movies</a></li>
+                        <li><a routerLink="/movies/new">Add Movie</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links-column">
+                    <h5>Resources</h5>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Terms of Use</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links-column">
+                    <h5>Company</h5>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Privacy</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="col-md-3">
-                <h6>Connect With Us</h6>
+            <div class="footer-social">
                 <div class="social-links">
-                    <a href="#" class="text-light me-2"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="text-light me-2"><i class="bi bi-twitter"></i></a>
-                    <a href="#" class="text-light me-2"><i class="bi bi-instagram"></i></a>
-                    <a href="#" class="text-light"><i class="bi bi-youtube"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="copyright">
+                &copy; {{ currentYear }} MovieFlix - Made by Ruxe - Netflix-Inspired Theme.
+            </div>
+            <div class="footer-language">
+                <div class="language-selector">
+                    <i class="bi bi-globe"></i>
+                    <span>English</span>
+                    <i class="bi bi-caret-down-fill"></i>
                 </div>
             </div>
         </div>

@@ -1,33 +1,40 @@
-<header class="netflix-header">
+<header class="netflix-header" [class.scrolled]="isScrolled">
     <div class="container-fluid px-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <h1 class="netflix-logo m-0">
+        <div class="netflix-header-content">
+            <!-- Logo and Navigation -->
+            <div class="netflix-header-left">
+                <h1 class="netflix-logo">
                     <a (click)="goToHome()" class="text-decoration-none cursor-pointer">
                         <span class="netflix-logo-text">MOVIEFLIX</span>
                     </a>
                 </h1>
 
-                <nav class="main-nav d-none d-md-flex ms-4">
-                    <ul class="nav">
+                <nav class="main-nav d-none d-md-flex">
+                    <ul class="nav-list">
                         <li class="nav-item">
-                            <a class="nav-link" routerLink="/movies" routerLinkActive="active">Browse</a>
+                            <a class="nav-link" [routerLink]="['/movies']" [routerLinkActiveOptions]="{exact: true}"
+                                routerLinkActive="active">
+                                Browse
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" routerLink="/movies/new" routerLinkActive="active">Add Movie</a>
+                            <a class="nav-link" [routerLink]="['/movies/new']" routerLinkActive="active">
+                                Add Movie
+                            </a>
                         </li>
                     </ul>
                 </nav>
             </div>
 
-            <div class="d-flex align-items-center">
-                <div class="search-container me-3">
+            <!-- Search and Menu -->
+            <div class="netflix-header-right">
+                <div class="search-container">
                     <form (submit)="handleSearch($event)" class="search-form">
                         <button type="button" class="search-toggle" (click)="toggleSearch()">
                             <i class="bi bi-search"></i>
                         </button>
                         <input type="search" class="search-input" [class.active]="searchActive"
-                            placeholder="Titles, people, genres" [formControl]="searchControl">
+                            placeholder="Search titles, genres..." [formControl]="searchControl">
                     </form>
                 </div>
 
@@ -39,22 +46,24 @@
 
         <!-- Mobile Menu -->
         <div class="netflix-mobile-menu" [class.active]="showMobileMenu">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link" routerLink="/movies" routerLinkActive="active" (click)="toggleMobileMenu()">
+            <ul class="mobile-nav-list">
+                <li class="mobile-nav-item">
+                    <a class="mobile-nav-link" [routerLink]="['/movies']" [routerLinkActiveOptions]="{exact: true}"
+                        routerLinkActive="active" (click)="toggleMobileMenu()">
                         <i class="bi bi-collection-play me-2"></i>Browse Movies
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" routerLink="/movies/new" routerLinkActive="active" (click)="toggleMobileMenu()">
+                <li class="mobile-nav-item">
+                    <a class="mobile-nav-link" [routerLink]="['/movies/new']" routerLinkActive="active"
+                        (click)="toggleMobileMenu()">
                         <i class="bi bi-plus-circle me-2"></i>Add Movie
                     </a>
                 </li>
-                <li class="nav-item mt-3">
-                    <form (submit)="handleSearch($event)" class="d-flex mobile-search">
+                <li class="mobile-nav-item">
+                    <form (submit)="handleSearch($event)" class="mobile-search-form">
                         <input type="search" class="form-control" placeholder="Search movies..."
                             [formControl]="searchControl">
-                        <button type="submit" class="btn btn-primary ms-2">
+                        <button type="submit" class="mobile-search-button">
                             <i class="bi bi-search"></i>
                         </button>
                     </form>

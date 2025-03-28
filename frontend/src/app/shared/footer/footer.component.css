@@ -20,3 +20,129 @@ footer li {
 footer a:hover {
   text-decoration: underline !important;
 }
+
+.netflix-footer {
+  background-color: var(--bg-darker);
+  color: var(--text-muted);
+  padding: 50px 0 30px;
+  margin-top: 60px;
+  border-top: 2px solid #222;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 768px) {
+  .footer-content {
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: flex-start;
+  }
+}
+
+.footer-logo h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  color: var(--primary-color);
+  letter-spacing: -1px;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 30px;
+}
+
+.footer-links-column h5 {
+  color: #999;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.footer-links-column ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links-column li {
+  margin-bottom: 12px;
+}
+
+.footer-links-column a {
+  color: #808080;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.footer-links-column a:hover {
+  color: var(--text-light);
+  text-decoration: underline;
+}
+
+.social-links {
+  display: flex;
+  gap: 20px;
+}
+
+.social-links a {
+  color: var(--text-light);
+  font-size: 1.4rem;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.social-links a:hover {
+  color: var(--primary-color);
+  transform: translateY(-3px);
+}
+
+.footer-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 30px;
+  border-top: 1px solid #333;
+}
+
+@media (min-width: 768px) {
+  .footer-bottom {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.copyright {
+  font-size: 0.85rem;
+}
+
+.language-selector {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #666;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.language-selector:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.language-selector i:first-child {
+  margin-right: 8px;
+}
+
+.language-selector i:last-child {
+  margin-left: 8px;
+  font-size: 0.7rem;
+}
