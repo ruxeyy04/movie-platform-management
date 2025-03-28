@@ -2,3 +2,34 @@
   font-weight: bold;
   text-decoration: underline;
 }
+
+.search-input {
+  max-width: 400px;
+}
+
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  padding-top: 0.5rem;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease-out;
+}
+
+.mobile-menu.show {
+  display: flex;
+  max-height: 200px;
+}
+
+.mobile-menu-button {
+  border: none;
+  padding: 0.5rem;
+  font-size: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu.show {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 0.5rem;
+  }
+}

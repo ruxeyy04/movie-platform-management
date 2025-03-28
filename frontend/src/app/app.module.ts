@@ -11,6 +11,8 @@ import { MovieFormComponent } from './components/movie-form/movie-form.component
 import { MoviePlayerComponent } from './components/movie-player/movie-player.component';
 import { HeaderComponent } from './shared/header/header.component';
 import { FooterComponent } from './shared/footer/footer.component';
+import { ConfirmationModalComponent } from './shared/confirmation-modal/confirmation-modal.component';
+import { ToastNotificationsComponent } from './shared/toast-notifications/toast-notifications.component';
 
 @NgModule({
     declarations: [
@@ -20,7 +22,9 @@ import { FooterComponent } from './shared/footer/footer.component';
         MovieFormComponent,
         MoviePlayerComponent,
         HeaderComponent,
-        FooterComponent
+        FooterComponent,
+        ConfirmationModalComponent,
+        ToastNotificationsComponent
     ],
     imports: [
         BrowserModule,
@@ -32,4 +36,4 @@ import { FooterComponent } from './shared/footer/footer.component';
     providers: [],
     bootstrap: [AppComponent]
 })
-export class AppModule { } 
+export class AppModule { }

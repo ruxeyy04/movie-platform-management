@@ -13,6 +13,8 @@ export class MovieDetailsComponent implements OnInit {
   movie: Movie | null = null;
   loading = true;
   error = false;
+  showDeleteModal = false;
+  deleteInProgress = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -51,19 +53,31 @@ export class MovieDetailsComponent implements OnInit {
     this.location.back();
   }
 
+  confirmDelete(): void {
+    this.showDeleteModal = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal = false;
+  }
+
   deleteMovie(): void {
     if (!this.movie?.id) return;
 
-    if (confirm('Are you sure you want to delete this movie?')) {
-      this.movieService.deleteMovie(this.movie.id).subscribe({
-        next: () => {
-          this.router.navigate(['/movies']);
-        },
-        error: (err) => {
-          console.error('Error deleting movie', err);
-          alert('Failed to delete the movie. Please try again.');
-        }
-      });
-    }
+    this.deleteInProgress = true;
+
+    this.movieService.deleteMovie(this.movie.id).subscribe({
+      next: () => {
+        this.deleteInProgress = false;
+        this.showDeleteModal = false;
+        this.router.navigate(['/movies']);
+      },
+      error: (err) => {
+        console.error('Error deleting movie', err);
+        this.deleteInProgress = false;
+        this.showDeleteModal = false;
+        alert('Failed to delete the movie. Please try again.');
+      }
+    });
   }
 }

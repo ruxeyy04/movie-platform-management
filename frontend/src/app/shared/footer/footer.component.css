@@ -3,3 +3,20 @@ footer {
   bottom: 0;
   width: 100%;
 }
+
+.social-links a {
+  font-size: 1.25rem;
+  transition: color 0.2s;
+}
+
+.social-links a:hover {
+  color: #0d6efd !important;
+}
+
+footer li {
+  margin-bottom: 0.5rem;
+}
+
+footer a:hover {
+  text-decoration: underline !important;
+}
