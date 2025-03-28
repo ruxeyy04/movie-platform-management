@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { NotificationService, Notification } from '../../services/notification.service';
 
+// Extended notification interface that includes closing state
+interface NotificationWithState extends Notification {
+  closing?: boolean;
+}
+
 @Component({
   selector: 'app-toast-notifications',
   templateUrl: './toast-notifications.component.html',
@@ -11,7 +16,7 @@ import { NotificationService, Notification } from '../../services/notification.s
   imports: [CommonModule]
 })
 export class ToastNotificationsComponent implements OnInit, OnDestroy {
-  notifications: Notification[] = [];
+  notifications: NotificationWithState[] = [];
   private subscription: Subscription | null = null;
 
   constructor(private notificationService: NotificationService) { }
@@ -42,11 +47,12 @@ export class ToastNotificationsComponent implements OnInit, OnDestroy {
     }
   }
 
-  getToastClass(type: string): string {
-    return type;
+  getToastClass(type: string, closing?: boolean): string {
+    return `${type}${closing ? ' toast-closing' : ''}`;
   }
 
   dismiss(id: number): void {
-    this.notificationService.remove(id);
+    // Use the service's animation method instead of handling it here
+    this.notificationService.animateThenRemove(id);
   }
 }

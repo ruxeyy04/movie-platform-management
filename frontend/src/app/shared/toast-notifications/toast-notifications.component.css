@@ -18,6 +18,11 @@
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   opacity: 0.95;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.netflix-toast.toast-closing {
+  animation: toastSlideOut 0.3s ease-in-out forwards;
 }
 
 @keyframes toastSlideIn {
@@ -28,6 +33,17 @@
   to {
     transform: translateX(0);
     opacity: 0.95;
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 0.95;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }
 

@@ -5,6 +5,7 @@ export interface Notification {
     id: number;
     message: string;
     type: 'success' | 'error' | 'info' | 'warning';
+    closing?: boolean;
 }
 
 @Injectable({
@@ -44,10 +45,32 @@ export class NotificationService {
 
         // Auto-remove after 5 seconds
         setTimeout(() => {
-            this.remove(id);
+            this.animateThenRemove(id);
         }, 5000);
     }
 
+    // Start the removal animation
+    animateThenRemove(id: number): void {
+        const currentNotifications = this._notifications.value;
+        const index = currentNotifications.findIndex(notification => notification.id === id);
+
+        if (index !== -1) {
+            // Set the closing state to trigger animation
+            const updatedNotifications = [...currentNotifications];
+            updatedNotifications[index] = {
+                ...updatedNotifications[index],
+                closing: true
+            };
+            this._notifications.next(updatedNotifications);
+
+            // Remove after animation completes
+            setTimeout(() => {
+                this.remove(id);
+            }, 300); // Match animation duration
+        }
+    }
+
+    // Actually remove the notification
     remove(id: number): void {
         const currentNotifications = this._notifications.value;
         const newNotifications = currentNotifications.filter(notification => notification.id !== id);

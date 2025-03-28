@@ -1,6 +1,7 @@
 <div class="netflix-toast-container">
-    <div *ngFor="let notification of notifications" class="netflix-toast" [ngClass]="getToastClass(notification.type)"
-        role="alert" aria-live="assertive" aria-atomic="true">
+    <div *ngFor="let notification of notifications" class="netflix-toast"
+        [ngClass]="getToastClass(notification.type, notification.closing)" role="alert" aria-live="assertive"
+        aria-atomic="true">
         <div class="netflix-toast-header">
             <i class="bi me-2" [ngClass]="getIcon(notification.type)"></i>
             <strong class="me-auto">{{ notification.type | titlecase }}</strong>
