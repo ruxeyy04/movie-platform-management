@@ -1,7 +1,7 @@
 export const environment = {
     production: false,
     genre_mock_data: false,
-    movie_mock_data: true,
+    movie_mock_data: false,
     GENRE_API_URL: 'http://localhost:8000/api/genres/',
     MOVIE_API_URL: 'http://localhost:8000/api/movies/',
     AUTH_USERNAME: 'admin',

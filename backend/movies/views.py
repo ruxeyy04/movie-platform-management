@@ -26,6 +26,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
 
     def get_queryset(self):
+        # For testing purposes, we can uncomment the following line to slow down the response
         # import time
         # time.sleep(2)
         queryset = super().get_queryset()
@@ -47,8 +48,9 @@ class MovieViewSet(viewsets.ModelViewSet):
     ordering_fields = ['rating', 'release_date']  # Allow sorting by rating & release date
     
     def get_queryset(self):
-        import time
-        time.sleep(2)
+        # For testing purposes, we can uncomment the following line to slow down the response
+        # import time
+        # time.sleep(2)
         queryset = super().get_queryset()
         genre = self.request.query_params.get('genre')
         min_rating = self.request.query_params.get('min_rating')

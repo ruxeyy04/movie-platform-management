@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
 import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
 import { NotificationService } from '../../services/notification.service';
 import { interval, Subscription } from 'rxjs';
+import { PaginatedResponse } from '../../services/genre.service';
 
 @Component({
   selector: 'app-movie-list',
@@ -22,6 +23,12 @@ export class MovieListComponent implements OnInit, OnDestroy {
   movieToDelete: Movie | null = null;
   deleteInProgress = false;
 
+  // Pagination
+  currentPage = 1;
+  totalItems = 0;
+  nextPage: string | null = null;
+  previousPage: string | null = null;
+
   // Hero banner properties
   featuredMovies: Movie[] = [];
   currentFeaturedIndex = 0;
@@ -32,13 +39,21 @@ export class MovieListComponent implements OnInit, OnDestroy {
   // Add a map to track which movies have their actions visible
   expandedMovies = new Map<any, boolean>();
 
+  // Track subscriptions
+  private subscriptions: Subscription[] = [];
+
   constructor(
     private movieService: MovieService,
     private notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
-    this.loadMovies();
+    this.loadMovies(1);
+
+    // Subscribe to loading states
+    this.subscriptions.push(
+      this.movieService.listLoading$.subscribe(status => this.loading = status)
+    );
   }
 
   ngOnDestroy(): void {
@@ -46,15 +61,20 @@ export class MovieListComponent implements OnInit, OnDestroy {
     if (this.rotationInterval) {
       this.rotationInterval.unsubscribe();
     }
+
+    // Clean up other subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  loadMovies(): void {
-    this.loading = true;
-    this.movieService.getMovies()
+  loadMovies(page: number = 1): void {
+    this.movieService.getMovies(page)
       .subscribe({
-        next: (movies) => {
-          this.movies = movies;
-          this.loading = false;
+        next: (response: PaginatedResponse<Movie>) => {
+          this.movies = response.results;
+          this.totalItems = response.count;
+          this.nextPage = response.next;
+          this.previousPage = response.previous;
+          this.currentPage = page;
 
           // Setup featured movies
           this.setupFeaturedMovies();
@@ -62,9 +82,22 @@ export class MovieListComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Error fetching movies', err);
           this.error = true;
-          this.loading = false;
         }
       });
+  }
+
+  goToNextPage(): void {
+    if (this.nextPage) {
+      const nextPageNumber = this.movieService.getPageFromUrl(this.nextPage);
+      this.loadMovies(nextPageNumber);
+    }
+  }
+
+  goToPreviousPage(): void {
+    if (this.previousPage) {
+      const prevPageNumber = this.movieService.getPageFromUrl(this.previousPage);
+      this.loadMovies(prevPageNumber);
+    }
   }
 
   setupFeaturedMovies(): void {
@@ -155,11 +188,12 @@ export class MovieListComponent implements OnInit, OnDestroy {
 
     this.movieService.deleteMovie(movieId).subscribe({
       next: () => {
-        this.movies = this.movies.filter(movie => movie.id !== movieId);
-        this.featuredMovies = this.featuredMovies.filter(movie => movie.id !== movieId);
-
-        if (this.currentFeaturedIndex >= this.featuredMovies.length) {
-          this.currentFeaturedIndex = 0;
+        // Check if we need to go to previous page
+        if (this.movies.length === 1 && this.currentPage > 1) {
+          this.loadMovies(this.currentPage - 1);
+        } else {
+          // Just reload current page
+          this.loadMovies(this.currentPage);
         }
 
         this.deleteInProgress = false;

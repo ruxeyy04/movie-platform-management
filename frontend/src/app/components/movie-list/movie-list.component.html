@@ -37,7 +37,8 @@
 
     <div class="container pb-5">
         <!-- Page Title and Add Button -->
-        <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+        <div *ngIf="!loading && !error && movies.length > 0"
+            class="d-flex justify-content-between align-items-center mb-4 mt-4">
             <h2 class="section-title">All Movies</h2>
             <a routerLink="/movies/new" class="btn btn-netflix-add">
                 <i class="bi bi-plus-lg me-1"></i>Add New Movie
@@ -141,6 +142,24 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-between align-items-center mb-4"
+            *ngIf="!loading && !error && totalItems > 0">
+            <div class="movie-count">
+                Showing {{ movies.length }} of {{ totalItems }} movie{{ totalItems !== 1 ? 's' : '' }}
+            </div>
+
+            <div class="pagination-controls">
+                <button class="btn-netflix-pagination" [disabled]="!previousPage" (click)="goToPreviousPage()">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </button>
+                <span class="page-info">Page {{ currentPage }}</span>
+                <button class="btn-netflix-pagination" [disabled]="!nextPage" (click)="goToNextPage()">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
             </div>
         </div>
     </div>
