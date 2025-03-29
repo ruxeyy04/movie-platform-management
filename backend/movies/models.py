@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator, FileExtensionValidator
+from decimal import Decimal
 
 class Genre(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -15,7 +16,7 @@ class Movie(models.Model):
     rating = models.DecimalField(
         max_digits=3, 
         decimal_places=1,
-        validators=[MinValueValidator(0), MaxValueValidator(10)]
+        validators=[MinValueValidator(Decimal('0.0')), MaxValueValidator(Decimal('10.0'))]
     )
     poster = models.ImageField(
         upload_to='movie_posters/', 
