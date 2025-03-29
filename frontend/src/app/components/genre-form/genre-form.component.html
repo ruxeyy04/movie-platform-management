@@ -49,6 +49,7 @@
                                 <div *ngIf="f['name'].errors['minlength']">Genre name must be at least 3 characters
                                 </div>
                                 <div *ngIf="f['name'].errors['maxlength']">Genre name cannot exceed 50 characters</div>
+                                <div *ngIf="f['name'].errors['serverError']">{{ f['name'].errors['serverError'] }}</div>
                             </div>
                             <small class="form-text">Choose a clear, specific genre name that viewers will
                                 recognize</small>
@@ -58,7 +59,10 @@
                             <button type="button" class="btn-netflix-cancel" routerLink="/genres">
                                 Cancel
                             </button>
-                            <button type="submit" class="btn-netflix-submit" [disabled]="genreForm.invalid">
+                            <button type="submit" class="btn-netflix-submit"
+                                [disabled]="genreForm.invalid || submitting">
+                                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2" role="status"
+                                    aria-hidden="true"></span>
                                 {{ isEditMode ? 'Update' : 'Create' }} Genre
                             </button>
                         </div>

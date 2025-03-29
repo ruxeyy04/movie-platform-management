@@ -1,30 +1,70 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { enableProdMode, Injectable } from '@angular/core';
+import { Observable, from, of, throwError, BehaviorSubject } from 'rxjs';
+import { catchError, map, finalize } from 'rxjs/operators';
+import axios, { AxiosError } from 'axios';
+import { environment } from '../../environments/environment';
+
+import { GENRES } from './mock-series';
 import { Genre } from '../models/genre.model';
 
-// Mock data for genres
-export const GENRES: Genre[] = [
-    { id: 1, name: 'Action' },
-    { id: 2, name: 'Adventure' },
-];
+// Pagination interface
+export interface PaginatedResponse<T> {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
+}
+
+
 
 @Injectable({
     providedIn: 'root'
 })
 export class GenreService {
-    private apiUrl = 'http://localhost:8000/api/genres'; // Django backend API URL
-    private useMock = true; // Toggle between mock and real API
-
-    constructor(private http: HttpClient) { }
-
-    getGenres(): Observable<Genre[]> {
-        if (this.useMock) {
-            return of([...GENRES]); // Return a copy to prevent modification of original
+    private useMock = environment.genre_mock_data;
+    private apiUrl = environment.GENRE_API_URL;
+    private axiosConfig = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + btoa(environment.AUTH_USERNAME + ':' + environment.AUTH_PASSWORD),
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
         }
-        return this.http.get<Genre[]>(this.apiUrl)
-            .pipe(catchError(this.handleError));
+    };
+
+    // Loading state subjects
+    private loadingList = new BehaviorSubject<boolean>(false);
+    private loadingCreate = new BehaviorSubject<boolean>(false);
+    private loadingUpdate = new BehaviorSubject<boolean>(false);
+    private loadingDelete = new BehaviorSubject<boolean>(false);
+
+    // Observable streams
+    listLoading$ = this.loadingList.asObservable();
+    createLoading$ = this.loadingCreate.asObservable();
+    updateLoading$ = this.loadingUpdate.asObservable();
+    deleteLoading$ = this.loadingDelete.asObservable();
+
+    constructor() { }
+
+    getGenres(page: number = 1): Observable<PaginatedResponse<Genre>> {
+        if (this.useMock) {
+            const mockResponse: PaginatedResponse<Genre> = {
+                count: GENRES.length,
+                next: null,
+                previous: null,
+                results: [...GENRES]
+            };
+            return of(mockResponse);
+        }
+
+        this.loadingList.next(true);
+        return from(axios.get(`${this.apiUrl}?page=${page}`, this.axiosConfig)
+            .then(response => response.data))
+            .pipe(
+                catchError(this.handleError),
+                finalize(() => this.loadingList.next(false))
+            );
     }
 
     getGenre(id: number): Observable<Genre> {
@@ -33,22 +73,33 @@ export class GenreService {
             if (!genre) {
                 return throwError(() => new Error(`Genre with id ${id} not found`));
             }
-            return of({ ...genre }); // Return a copy
+            return of({ ...genre });
         }
-        return this.http.get<Genre>(`${this.apiUrl}/${id}`)
-            .pipe(catchError(this.handleError));
+
+        this.loadingList.next(true);
+        return from(axios.get(`${this.apiUrl}${id}/`, this.axiosConfig)
+            .then(response => response.data))
+            .pipe(
+                catchError(this.handleError),
+                finalize(() => this.loadingList.next(false))
+            );
     }
 
     addGenre(genre: Genre): Observable<Genre> {
         if (this.useMock) {
-            // Create a new ID based on the highest existing ID
             const newId = Math.max(...GENRES.map(g => g.id || 0)) + 1;
             const newGenre = { ...genre, id: newId };
             GENRES.push(newGenre);
-            return of({ ...newGenre }); // Return a copy
+            return of({ ...newGenre });
         }
-        return this.http.post<Genre>(this.apiUrl, genre)
-            .pipe(catchError(this.handleError));
+
+        this.loadingCreate.next(true);
+        return from(axios.post(this.apiUrl, genre, this.axiosConfig)
+            .then(response => response.data))
+            .pipe(
+                catchError(this.handleError),
+                finalize(() => this.loadingCreate.next(false))
+            );
     }
 
     updateGenre(id: number, genre: Genre): Observable<Genre> {
@@ -59,10 +110,16 @@ export class GenreService {
             }
             const updatedGenre = { ...genre, id };
             GENRES[index] = updatedGenre;
-            return of({ ...updatedGenre }); // Return a copy
+            return of({ ...updatedGenre });
         }
-        return this.http.put<Genre>(`${this.apiUrl}/${id}`, genre)
-            .pipe(catchError(this.handleError));
+
+        this.loadingUpdate.next(true);
+        return from(axios.put(`${this.apiUrl}${id}/`, genre, this.axiosConfig)
+            .then(response => response.data))
+            .pipe(
+                catchError(this.handleError),
+                finalize(() => this.loadingUpdate.next(false))
+            );
     }
 
     deleteGenre(id: number): Observable<void> {
@@ -74,18 +131,52 @@ export class GenreService {
             GENRES.splice(index, 1);
             return of(void 0);
         }
-        return this.http.delete<void>(`${this.apiUrl}/${id}`)
-            .pipe(catchError(this.handleError));
+
+        this.loadingDelete.next(true);
+        return from(axios.delete(`${this.apiUrl}${id}/`, this.axiosConfig)
+            .then(() => undefined))
+            .pipe(
+                catchError(this.handleError),
+                finalize(() => this.loadingDelete.next(false))
+            );
     }
 
-    private handleError(error: HttpErrorResponse) {
+    getPageFromUrl(url: string | null): number {
+        if (!url) return 1;
+        const match = url.match(/page=(\d+)/);
+        return match ? parseInt(match[1], 10) : 1;
+    }
+
+    private handleError(error: any) {
         let errorMessage = '';
-        if (error.error instanceof ErrorEvent) {
-            // Client-side error
-            errorMessage = `Error: ${error.error.message}`;
+        if (error.isAxiosError) {
+            const axiosError = error as AxiosError;
+            if (axiosError.response && axiosError.response.data) {
+                const data = axiosError.response.data;
+                if (typeof data === 'object' && data !== null) {
+                    const fieldErrors = Object.entries(data)
+                        .map(([field, errors]) => {
+                            const fieldName = field.charAt(0).toUpperCase() + field.slice(1);
+                            if (Array.isArray(errors)) {
+                                return `${fieldName}: ${errors.join(', ')}`;
+                            }
+                            return `${fieldName}: ${errors}`;
+                        })
+                        .join('\n');
+
+                    if (fieldErrors) {
+                        errorMessage = fieldErrors;
+                        return throwError(() => ({
+                            message: errorMessage,
+                            fieldErrors: data,
+                            status: axiosError.response?.status || 'unknown'
+                        }));
+                    }
+                }
+            }
+            errorMessage = `Error Code: ${axiosError.response?.status || 'unknown'}\nMessage: ${axiosError.message}`;
         } else {
-            // Server-side error
-            errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+            errorMessage = `Error: ${error.message || error}`;
         }
         console.error(errorMessage);
         return throwError(() => new Error(errorMessage));

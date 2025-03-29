@@ -24,10 +24,20 @@ def home(request):
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+
+    def get_queryset(self):
+        # import time
+        # time.sleep(2)
+        queryset = super().get_queryset()
+        return queryset
     
     @method_decorator(cache_page(60 * 15, key_prefix='genre_list'))  # Cache for 15 minutes
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+    
+    @method_decorator(cache_page(60 * 10, key_prefix='genre_detail'))  # Cache for 10 minutes
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
 class MovieViewSet(viewsets.ModelViewSet):
     queryset = Movie.objects.all().prefetch_related('genres').order_by('id')

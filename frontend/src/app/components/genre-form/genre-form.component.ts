@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { Genre } from '../../models/genre.model';
 import { GenreService } from '../../services/genre.service';
 import { NotificationService } from '../../services/notification.service';
 import { Location } from '@angular/common';
+import { Subscription } from 'rxjs';
+
 @Component({
   selector: 'app-genre-form',
   standalone: true,
@@ -13,7 +15,7 @@ import { Location } from '@angular/common';
   templateUrl: './genre-form.component.html',
   styleUrls: ['./genre-form.component.css']
 })
-export class GenreFormComponent implements OnInit {
+export class GenreFormComponent implements OnInit, OnDestroy {
   genreForm!: FormGroup;
   isEditMode = false;
   genreId?: number;
@@ -22,6 +24,8 @@ export class GenreFormComponent implements OnInit {
   title = 'Add New Genre';
   error: string | null = null;
   submitted = false;
+  fieldErrors: { [key: string]: string[] } = {};
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -35,6 +39,16 @@ export class GenreFormComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.checkForEditMode();
+
+    this.subscriptions.push(
+      this.genreService.listLoading$.subscribe(status => this.loading = status),
+      this.genreService.createLoading$.subscribe(status => this.submitting = status),
+      this.genreService.updateLoading$.subscribe(status => this.submitting = status)
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   private initForm(): void {
@@ -53,17 +67,14 @@ export class GenreFormComponent implements OnInit {
   }
 
   private loadGenre(id: number): void {
-    this.loading = true;
     this.genreService.getGenre(id).subscribe({
       next: (genre) => {
         this.genreForm.patchValue({
           name: genre.name
         });
-        this.loading = false;
       },
       error: (err) => {
-        this.notificationService.error('Failed to load genre: ' + err.message);
-        this.loading = false;
+        this.handleError(err);
         this.router.navigate(['/genres']);
       }
     });
@@ -71,46 +82,76 @@ export class GenreFormComponent implements OnInit {
 
   onSubmit(): void {
     this.submitted = true;
+    this.fieldErrors = {};
 
     if (this.genreForm.invalid) {
       this.genreForm.markAllAsTouched();
       return;
     }
 
-    this.submitting = true;
     const genreData: Genre = this.genreForm.value;
 
     if (this.isEditMode && this.genreId) {
       this.genreService.updateGenre(this.genreId, genreData).subscribe({
         next: () => {
           this.notificationService.success('Genre updated successfully');
-          this.submitting = false;
           this.router.navigate(['/genres']);
         },
         error: (err) => {
-          this.notificationService.error('Failed to update genre: ' + err.message);
-          this.submitting = false;
+          this.handleError(err);
         }
       });
     } else {
       this.genreService.addGenre(genreData).subscribe({
         next: () => {
           this.notificationService.success('Genre created successfully');
-          this.submitting = false;
           this.router.navigate(['/genres']);
         },
         error: (err) => {
-          this.notificationService.error('Failed to create genre: ' + err.message);
-          this.submitting = false;
+          this.handleError(err);
         }
       });
     }
   }
 
-  // Helper method for form validation
+  private handleError(err: any): void {
+    if (err.fieldErrors) {
+      this.fieldErrors = err.fieldErrors;
+
+      Object.keys(this.fieldErrors).forEach(key => {
+        const control = this.genreForm.get(key);
+        if (control) {
+          const capitalizedErrors = this.fieldErrors[key].map(error => this.capitalizeFirstLetter(error));
+          const serverErrors = { serverError: capitalizedErrors.join(', ') };
+          control.setErrors({ ...control.errors, ...serverErrors });
+          control.markAsTouched();
+        }
+      });
+      this.error = this.capitalizeFirstLetter(err.message);
+    } else {
+      this.error = this.capitalizeFirstLetter(err.message);
+    }
+
+    const errorMessage = this.isEditMode ? 'Failed to update genre' : 'Failed to create genre';
+    this.notificationService.error(`${errorMessage}: ${this.capitalizeFirstLetter(err.message)}`);
+  }
+
+  private capitalizeFirstLetter(message: string): string {
+    return message.charAt(0).toUpperCase() + message.slice(1);
+  }
+
   get f() {
     return this.genreForm.controls;
   }
+
+  hasFieldError(fieldName: string): boolean {
+    return !!this.fieldErrors[fieldName];
+  }
+
+  getFieldError(fieldName: string): string {
+    return this.fieldErrors[fieldName]?.join(', ') || '';
+  }
+
   goBack(): void {
     this.location.back();
   }

@@ -36,9 +36,6 @@
         <div *ngIf="!loading && !error && genres.length === 0" class="genre-empty">
             <i class="bi bi-film"></i>
             <h3 class="genre-empty-message">No genres have been added yet</h3>
-            <button class="btn-netflix-submit mt-3" routerLink="/genres/new">
-                <i class="bi bi-plus-circle me-2"></i>Add Your First Genre
-            </button>
         </div>
 
         <!-- Genre cards -->
@@ -50,8 +47,11 @@
                         <button class="btn-netflix-cancel" [routerLink]="['/genres/', genre.id, 'edit']">
                             <i class="bi bi-pencil me-2"></i>Edit
                         </button>
-                        <button class="btn-delete" (click)="deleteGenre(genre.id!)">
-                            <i class="bi bi-trash me-2"></i>Delete
+                        <button class="btn-delete" (click)="deleteGenre(genre.id!)"
+                            [disabled]="deleting && genreToDelete === genre.id">
+                            <span *ngIf="deleting && genreToDelete === genre.id"
+                                class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <i *ngIf="!(deleting && genreToDelete === genre.id)" class="bi bi-trash me-2"></i>Delete
                         </button>
                     </div>
                 </div>
@@ -61,7 +61,18 @@
         <!-- Footer -->
         <div class="genre-footer" *ngIf="!loading && !error && genres.length > 0">
             <div class="genre-count">
-                Showing {{ genres.length }} genre{{ genres.length !== 1 ? 's' : '' }}
+                Showing {{ genres.length }} of {{ totalItems }} genre{{ totalItems !== 1 ? 's' : '' }}
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-controls" *ngIf="totalItems > 0">
+                <button class="btn-netflix-pagination" [disabled]="!previousPage" (click)="goToPreviousPage()">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </button>
+                <span class="page-info">Page {{ currentPage }}</span>
+                <button class="btn-netflix-pagination" [disabled]="!nextPage" (click)="goToNextPage()">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
             </div>
         </div>
     </div>

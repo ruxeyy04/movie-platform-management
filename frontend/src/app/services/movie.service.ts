@@ -9,14 +9,14 @@ import { MOVIES } from './mock-movies';
     providedIn: 'root'
 })
 export class MovieService {
-    private apiUrl = 'http://localhost:3000/api/movies'; // Will be used later
-    private useMock = true; // Toggle between mock and real API
+    private apiUrl = 'http://localhost:8000/api/movies/';
+    private useMock = true;
 
     constructor(private http: HttpClient) { }
 
     getMovies(): Observable<Movie[]> {
         if (this.useMock) {
-            return of([...MOVIES]); // Return a copy to prevent modification of original
+            return of([...MOVIES]);
         }
         return this.http.get<Movie[]>(this.apiUrl)
             .pipe(catchError(this.handleError));
@@ -28,7 +28,7 @@ export class MovieService {
             if (!movie) {
                 return throwError(() => new Error(`Movie with id ${id} not found`));
             }
-            return of({ ...movie }); // Return a copy to prevent modification of original
+            return of({ ...movie });
         }
         return this.http.get<Movie>(`${this.apiUrl}/${id}`)
             .pipe(catchError(this.handleError));
@@ -36,11 +36,10 @@ export class MovieService {
 
     addMovie(movie: Movie): Observable<Movie> {
         if (this.useMock) {
-            // Create a new ID based on the highest existing ID
             const newId = Math.max(...MOVIES.map(m => m.id || 0)) + 1;
             const newMovie = { ...movie, id: newId };
             MOVIES.push(newMovie);
-            return of({ ...newMovie }); // Return a copy
+            return of({ ...newMovie });
         }
         return this.http.post<Movie>(this.apiUrl, movie)
             .pipe(catchError(this.handleError));
@@ -54,7 +53,7 @@ export class MovieService {
             }
             const updatedMovie = { ...movie, id };
             MOVIES[index] = updatedMovie;
-            return of({ ...updatedMovie }); // Return a copy
+            return of({ ...updatedMovie });
         }
         return this.http.put<Movie>(`${this.apiUrl}/${id}`, movie)
             .pipe(catchError(this.handleError));
@@ -76,10 +75,8 @@ export class MovieService {
     private handleError(error: HttpErrorResponse) {
         let errorMessage = '';
         if (error.error instanceof ErrorEvent) {
-            // Client-side error
             errorMessage = `Error: ${error.error.message}`;
         } else {
-            // Server-side error
             errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
         }
         console.error(errorMessage);
