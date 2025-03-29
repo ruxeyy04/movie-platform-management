@@ -22,6 +22,11 @@
                                 Add Movie
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" [routerLink]="['/genres']" routerLinkActive="active">
+                                Manage Genres
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -57,6 +62,12 @@
                     <a class="mobile-nav-link" [routerLink]="['/movies/new']" routerLinkActive="active"
                         (click)="toggleMobileMenu()">
                         <i class="bi bi-plus-circle me-2"></i>Add Movie
+                    </a>
+                </li>
+                <li class="mobile-nav-item">
+                    <a class="mobile-nav-link" [routerLink]="['/genres']" routerLinkActive="active"
+                        (click)="toggleMobileMenu()">
+                        <i class="bi bi-tags me-2"></i>Manage Genres
                     </a>
                 </li>
                 <li class="mobile-nav-item">

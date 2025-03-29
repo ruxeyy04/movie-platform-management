@@ -1,0 +1,113 @@
+<div class="netflix-form-container fade-in">
+    <div class="form-header">
+        <div class="container">
+            <button (click)="goBack()" class="back-button">
+                <i class="bi bi-arrow-left me-2"></i>Back
+            </button>
+            <h1 class="form-title">{{ isEditMode ? 'Edit' : 'Add New' }} Genre</h1>
+        </div>
+    </div>
+
+    <div class="container">
+
+
+        <!-- Loading state -->
+        <div *ngIf="loading" class="netflix-loader">
+            <div class="spinner">
+                <div class="bounce1"></div>
+                <div class="bounce2"></div>
+                <div class="bounce3"></div>
+            </div>
+            <p>Loading genre data...</p>
+        </div>
+
+        <!-- Error state -->
+        <div *ngIf="error" class="alert alert-danger">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            {{ error }}
+        </div>
+
+        <!-- Form content -->
+        <div *ngIf="!loading" class="row">
+            <div class="col-md-8 mb-4">
+                <form [formGroup]="genreForm" (ngSubmit)="onSubmit()" class="netflix-form">
+                    <div class="form-card">
+                        <h2 class="section-title">
+                            <i class="bi bi-film"></i> Genre Details
+                        </h2>
+
+                        <div class="form-group">
+                            <label for="name" class="form-label">Genre Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                                <input type="text" id="name" formControlName="name" class="form-control"
+                                    placeholder="Enter genre name (e.g. Action, Comedy, Drama)"
+                                    [ngClass]="{'is-invalid': submitted && f['name'].errors}">
+                            </div>
+                            <div *ngIf="submitted && f['name'].errors" class="invalid-feedback">
+                                <div *ngIf="f['name'].errors['required']">Genre name is required</div>
+                                <div *ngIf="f['name'].errors['minlength']">Genre name must be at least 3 characters
+                                </div>
+                                <div *ngIf="f['name'].errors['maxlength']">Genre name cannot exceed 50 characters</div>
+                            </div>
+                            <small class="form-text">Choose a clear, specific genre name that viewers will
+                                recognize</small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-netflix-cancel" routerLink="/genres">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn-netflix-submit" [disabled]="genreForm.invalid">
+                                {{ isEditMode ? 'Update' : 'Create' }} Genre
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-card tips-section">
+                    <h2 class="section-title">
+                        <i class="bi bi-lightbulb"></i> Tips
+                    </h2>
+
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="bi bi-check"></i>
+                            </div>
+                            <div class="tip-content">
+                                Use specific, recognizable genre names that users are familiar with.
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="bi bi-check"></i>
+                            </div>
+                            <div class="tip-content">
+                                Keep genre names concise - typically one or two words works best.
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="bi bi-check"></i>
+                            </div>
+                            <div class="tip-content">
+                                Use standard genre conventions: "Action", "Comedy", "Drama", etc.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="genre-info-note mt-4">
+                        <i class="bi bi-info-circle me-3"></i>
+                        <p>Genres help users discover movies they're interested in. Well-organized genres improve the
+                            user experience.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,71 @@
+<div class="netflix-form-container container-fluid">
+    <div class="form-header">
+        <div class="container">
+            <button class="back-button" routerLink="/movies">
+                <i class="bi bi-arrow-left me-2"></i>Back to Movies
+            </button>
+            <h1 class="form-title">Movie Genres</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Add button at top of content -->
+        <div class="genre-action-bar">
+            <button class="btn-netflix-submit" routerLink="/genres/new">
+                <i class="bi bi-plus-circle me-2"></i>Add New Genre
+            </button>
+        </div>
+
+        <!-- Loading state -->
+        <div *ngIf="loading" class="netflix-loader">
+            <div class="spinner">
+                <div class="bounce1"></div>
+                <div class="bounce2"></div>
+                <div class="bounce3"></div>
+            </div>
+            <p>Loading genres...</p>
+        </div>
+
+        <!-- Error state -->
+        <div *ngIf="error" class="genre-error">
+            <i class="bi bi-exclamation-circle"></i>
+            <p class="genre-error-message">{{ error }}</p>
+        </div>
+
+        <!-- Empty state -->
+        <div *ngIf="!loading && !error && genres.length === 0" class="genre-empty">
+            <i class="bi bi-film"></i>
+            <h3 class="genre-empty-message">No genres have been added yet</h3>
+            <button class="btn-netflix-submit mt-3" routerLink="/genres/new">
+                <i class="bi bi-plus-circle me-2"></i>Add Your First Genre
+            </button>
+        </div>
+
+        <!-- Genre cards -->
+        <div *ngIf="!loading && !error && genres.length > 0" class="genre-cards">
+            <div class="form-card genre-card" *ngFor="let genre of genres">
+                <div class="genre-card-content">
+                    <h3 class="genre-name">{{ genre.name }}</h3>
+                    <div class="genre-card-actions">
+                        <button class="btn-netflix-cancel" [routerLink]="['/genres/', genre.id, 'edit']">
+                            <i class="bi bi-pencil me-2"></i>Edit
+                        </button>
+                        <button class="btn-delete" (click)="deleteGenre(genre.id!)">
+                            <i class="bi bi-trash me-2"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="genre-footer" *ngIf="!loading && !error && genres.length > 0">
+            <div class="genre-count">
+                Showing {{ genres.length }} genre{{ genres.length !== 1 ? 's' : '' }}
+            </div>
+        </div>
+    </div>
+    <app-confirmation-modal [showModal]="showDeleteModal" title="Delete Genre"
+        message="Are you sure you want to delete this genre?" (confirm)="confirmDelete()" (cancel)="cancelDelete()">
+    </app-confirmation-modal>
+</div>
