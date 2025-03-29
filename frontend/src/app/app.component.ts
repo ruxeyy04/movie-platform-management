@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { HeaderComponent } from './shared/header/header.component';
 import { FooterComponent } from './shared/footer/footer.component';
 import { ToastNotificationsComponent } from './shared/toast-notifications/toast-notifications.component';
@@ -29,9 +30,18 @@ import { NotificationService } from './services/notification.service';
 export class AppComponent implements OnInit {
   title = 'MovieFlix';
 
-  constructor(private notificationService: NotificationService) { }
+  constructor(
+    private router: Router,
+    private notificationService: NotificationService
+  ) { }
+
   ngOnInit() {
     this.notificationService.success('Welcome to MovieFlix! Browse our collection of movies.');
-  }
 
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      window.scrollTo(0, 0);
+    });
+  }
 }
