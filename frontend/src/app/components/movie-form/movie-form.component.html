@@ -226,20 +226,67 @@
                                 </div>
                             </div>
 
-                            <!-- Video URL -->
+                            <!-- Video Input section (Updated with toggle) -->
                             <div class="form-group mb-4">
-                                <label for="videoUrl" class="form-label">Video URL</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-film"></i></span>
-                                    <input type="url" id="videoUrl" class="form-control" formControlName="videoUrl"
-                                        placeholder="https://example.com/movie.mp4"
-                                        [ngClass]="{'is-invalid': movieForm.get('videoUrl')?.invalid && movieForm.get('videoUrl')?.touched}">
+                                <label class="form-label">Movie Video</label>
+
+                                <!-- Input Type Toggle -->
+                                <div class="input-type-toggle mb-3">
+                                    <div class="toggle-options">
+                                        <label class="toggle-option" [class.active]="useVideoUrl">
+                                            <input type="radio" name="videoInputType" [checked]="useVideoUrl"
+                                                (change)="onVideoInputTypeChange(true)">
+                                            <span class="toggle-text"><i class="bi bi-link"></i> URL</span>
+                                        </label>
+                                        <label class="toggle-option" [class.active]="!useVideoUrl">
+                                            <input type="radio" name="videoInputType" [checked]="!useVideoUrl"
+                                                (change)="onVideoInputTypeChange(false)">
+                                            <span class="toggle-text"><i class="bi bi-upload"></i> Upload</span>
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="invalid-feedback" *ngIf="movieForm.get('videoUrl')?.errors?.['required']">
-                                    Video URL is required.
+
+                                <!-- URL Input (shown when URL is selected) -->
+                                <div *ngIf="useVideoUrl" class="video-url-input">
+                                    <div class="form-group">
+                                        <label for="videoUrl" class="form-label">Video URL</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-film"></i></span>
+                                            <input type="url" id="videoUrl" class="form-control"
+                                                formControlName="videoUrl" placeholder="https://example.com/movie.mp4"
+                                                [ngClass]="{'is-invalid': movieForm.get('videoUrl')?.invalid && movieForm.get('videoUrl')?.touched}">
+                                        </div>
+                                        <div class="invalid-feedback"
+                                            *ngIf="movieForm.get('videoUrl')?.errors?.['required']">
+                                            Video URL is required.
+                                        </div>
+                                        <div class="invalid-feedback"
+                                            *ngIf="movieForm.get('videoUrl')?.errors?.['pattern']">
+                                            Please enter a valid URL starting with http:// or https://
+                                        </div>
+                                        <small class="form-text text-muted">Enter a direct URL to the video file</small>
+                                    </div>
                                 </div>
-                                <div class="invalid-feedback" *ngIf="movieForm.get('videoUrl')?.errors?.['pattern']">
-                                    Please enter a valid URL starting with http:// or https://
+
+                                <!-- File Upload (shown when Upload is selected) -->
+                                <div *ngIf="!useVideoUrl" class="video-file-input">
+                                    <div class="form-group">
+                                        <label for="videoFile" class="form-label">Upload Video</label>
+                                        <div class="file-upload-wrapper">
+                                            <div class="file-upload-input">
+                                                <input type="file" id="videoFile" class="form-control-file"
+                                                    accept="video/*" (change)="onVideoFileSelected($event)">
+                                                <div class="file-upload-placeholder" [class.has-file]="videoFile">
+                                                    <i class="bi bi-film"></i>
+                                                    <span *ngIf="!videoFile">Drop video file here or click to
+                                                        browse</span>
+                                                    <span *ngIf="videoFile">{{ videoFileName }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <small class="form-text text-muted">Supported formats: MP4, WebM, MOV (max
+                                            {{ formatFileSize(MAX_VIDEO_SIZE) }})</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -260,20 +307,61 @@
                                 </div>
                             </div>
 
-                            <!-- Poster URL -->
-                            <div class="form-group mb-4">
-                                <label for="posterUrl" class="form-label">Poster URL</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-link"></i></span>
-                                    <input type="url" id="posterUrl" class="form-control" formControlName="posterUrl"
-                                        placeholder="https://example.com/poster.jpg"
-                                        [ngClass]="{'is-invalid': movieForm.get('posterUrl')?.invalid && movieForm.get('posterUrl')?.touched}">
+                            <!-- Input Type Toggle -->
+                            <div class="input-type-toggle mb-3">
+                                <div class="toggle-options">
+                                    <label class="toggle-option" [class.active]="usePosterUrl">
+                                        <input type="radio" name="posterInputType" [checked]="usePosterUrl"
+                                            (change)="onPosterInputTypeChange(true)">
+                                        <span class="toggle-text"><i class="bi bi-link"></i> URL</span>
+                                    </label>
+                                    <label class="toggle-option" [class.active]="!usePosterUrl">
+                                        <input type="radio" name="posterInputType" [checked]="!usePosterUrl"
+                                            (change)="onPosterInputTypeChange(false)">
+                                        <span class="toggle-text"><i class="bi bi-upload"></i> Upload</span>
+                                    </label>
                                 </div>
-                                <div class="invalid-feedback" *ngIf="movieForm.get('posterUrl')?.errors?.['required']">
-                                    Poster URL is required.
+                            </div>
+
+                            <!-- URL Input (shown when URL is selected) -->
+                            <div *ngIf="usePosterUrl" class="poster-url-input">
+                                <div class="form-group mb-4">
+                                    <label for="posterUrl" class="form-label">Poster URL</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-link"></i></span>
+                                        <input type="url" id="posterUrl" class="form-control"
+                                            formControlName="posterUrl" placeholder="https://example.com/poster.jpg"
+                                            [ngClass]="{'is-invalid': movieForm.get('posterUrl')?.invalid && movieForm.get('posterUrl')?.touched}">
+                                    </div>
+                                    <div class="invalid-feedback"
+                                        *ngIf="movieForm.get('posterUrl')?.errors?.['required']">
+                                        Poster URL is required.
+                                    </div>
+                                    <div class="invalid-feedback"
+                                        *ngIf="movieForm.get('posterUrl')?.errors?.['pattern']">
+                                        Please enter a valid URL starting with http:// or https://
+                                    </div>
+                                    <small class="form-text text-muted">Enter a direct URL to the image file</small>
                                 </div>
-                                <div class="invalid-feedback" *ngIf="movieForm.get('posterUrl')?.errors?.['pattern']">
-                                    Please enter a valid URL starting with http:// or https://
+                            </div>
+
+                            <!-- File Upload (shown when Upload is selected) -->
+                            <div *ngIf="!usePosterUrl" class="poster-file-input">
+                                <div class="form-group mb-4">
+                                    <label for="posterFile" class="form-label">Upload Image</label>
+                                    <div class="file-upload-wrapper">
+                                        <div class="file-upload-input">
+                                            <input type="file" id="posterFile" class="form-control-file"
+                                                accept="image/*" (change)="onPosterFileSelected($event)">
+                                            <div class="file-upload-placeholder" [class.has-file]="posterFile">
+                                                <i class="bi bi-image"></i>
+                                                <span *ngIf="!posterFile">Drop image here or click to browse</span>
+                                                <span *ngIf="posterFile">{{ posterFile.name }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">Supported formats: JPG, PNG, WebP (max {{
+                                        formatFileSize(MAX_POSTER_SIZE) }})</small>
                                 </div>
                             </div>
                         </div>

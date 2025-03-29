@@ -663,3 +663,103 @@ input[matDatepicker] {
   color: var(--text-light);
   font-size: 0.9rem;
 }
+
+/* Input Type Toggle Styles */
+.input-type-toggle {
+  margin-bottom: 15px;
+}
+
+.toggle-options {
+  display: flex;
+  background-color: rgba(30, 30, 30, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.toggle-option {
+  position: relative;
+  cursor: pointer;
+  padding: 8px 16px;
+  margin: 0;
+  transition: all 0.3s ease;
+}
+
+.toggle-option input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.toggle-option.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.toggle-text {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: white;
+}
+
+/* File Upload Styles */
+.file-upload-wrapper {
+  margin-top: 10px;
+}
+
+.file-upload-input {
+  position: relative;
+  width: 100%;
+  height: 150px;
+}
+
+.file-upload-input input[type="file"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.file-upload-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(30, 30, 30, 0.5);
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 20px;
+  color: #ddd;
+  transition: all 0.3s ease;
+}
+
+.file-upload-placeholder i {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.file-upload-placeholder:hover, 
+.file-upload-input input[type="file"]:hover + .file-upload-placeholder {
+  border-color: var(--primary-color);
+  background-color: rgba(30, 30, 30, 0.7);
+}
+
+.file-upload-placeholder.has-file {
+  border-color: #28a745;
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+/* Form Text */
+.form-text {
+  color: #aaa;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
