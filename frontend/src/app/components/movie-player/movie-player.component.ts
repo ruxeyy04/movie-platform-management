@@ -54,4 +54,19 @@ export class MoviePlayerComponent implements OnInit {
   goBack(): void {
     this.location.back();
   }
+
+  // Format the release date into "Month Day, Year Weekday" format
+  formatReleaseDate(date: string | Date | null): string {
+    if (!date) return 'Coming Soon';
+
+    const releaseDate = new Date(date);
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+
+    return releaseDate.toLocaleDateString('en-US', options);
+  }
 }

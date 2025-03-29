@@ -23,11 +23,14 @@
     <!-- Video Player -->
     <div *ngIf="!loading && !error && movie" class="player-container">
         <div class="player-header">
-            <button (click)="goBack()" class="back-button">
-                <i class="bi bi-arrow-left"></i>
-            </button>
-            <div class="movie-info-mini">
-                <h1 class="playing-title">{{ movie.title }}</h1>
+            <div class="header-content">
+                <button (click)="goBack()" class="back-button">
+                    <i class="bi bi-arrow-left"></i>
+                    <span class="back-text">Back</span>
+                </button>
+                <div class="movie-info-mini">
+                    <h1 class="playing-title">{{ movie.title }}</h1>
+                </div>
             </div>
         </div>
 
@@ -83,26 +86,30 @@
         <div class="container mt-4">
             <div class="now-playing-info">
                 <div class="row">
+                    <div class="col-md-4">
+                        <div class="poster-thumbnail">
+                            <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'"
+                                class="img-fluid rounded shadow">
+                        </div>
+                    </div>
                     <div class="col-md-8">
-                        <h2 class="playing-title-full">{{ movie.title }} <span class="playing-year">({{
-                                movie.releaseYear }})</span></h2>
+                        <h2 class="playing-title-full">
+                            {{ movie.title }}
+                            <span class="playing-year">({{ movie.releaseYear }})</span>
+                        </h2>
                         <div class="movie-metadata">
-                            <span class="release-date">{{ movie.releaseDate }}</span>
+                            <span class="release-date">{{ formatReleaseDate(movie.releaseDate) }}</span>
                             <span class="separator">•</span>
                             <span class="duration">{{ movie.duration }} min</span>
                             <span class="separator">•</span>
-                            <span class="rating">{{ movie.rating }}/10</span>
+                            <span class="rating"><i class="bi bi-star-fill text-warning me-1"></i>{{ movie.rating
+                                }}/10</span>
                         </div>
                         <div class="genres-container">
                             <span *ngFor="let genre of movie.genre" class="genre-pill">{{ genre }}</span>
                         </div>
                         <p class="synopsis">{{ movie.description }}</p>
                         <p class="director"><strong>Director:</strong> {{ movie.director }}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="poster-thumbnail">
-                            <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'" class="img-fluid rounded">
-                        </div>
                     </div>
                 </div>
             </div>

@@ -60,50 +60,77 @@
 
 .player-header {
   position: fixed;
-  top: 70px; /* Shift down to avoid navbar overlap */
+  top: 70px;
   left: 0;
   width: 100%;
-  padding: 20px;
+  padding: 15px;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.7) 60%,
     rgba(0, 0, 0, 0) 100%
   );
-  z-index: 90; /* Make sure this is lower than the navbar z-index */
+  z-index: 90;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
+  gap: 16px;
 }
 
 .back-button {
-  background: transparent;
-  border: none;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
   color: var(--text-light);
-  font-size: 24px;
-  margin-right: 20px;
-  opacity: 0.8;
-  transition: opacity 0.2s;
+  font-size: 16px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.9;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .back-button:hover {
   opacity: 1;
+  background-color: rgba(229, 9, 20, 0.7);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.back-button i {
+  font-size: 18px;
+}
+
+.back-text {
+  font-weight: 500;
 }
 
 .movie-info-mini {
-  opacity: 0.8;
+  flex: 1;
+  overflow: hidden;
 }
 
 .playing-title {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .video-container {
   width: 100%;
-  height: 70vh;
+  height: 60vh;
   background-color: black;
   position: relative;
-  margin-top: 50px; /* Add margin to move it down from the player header */
+  margin-top: 70px;
 }
 
 .netflix-theater-mode {
@@ -267,11 +294,16 @@
 .now-playing-info {
   color: var(--text-light);
   padding: 30px 0 60px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 1));
+  border-radius: 12px 12px 0 0;
+  margin-top: -20px;
+  position: relative;
 }
 
 .playing-title-full {
   font-size: 2rem;
   margin-bottom: 10px;
+  line-height: 1.2;
 }
 
 .playing-year {
@@ -285,30 +317,38 @@
   align-items: center;
   margin-bottom: 15px;
   color: var(--text-muted);
+  gap: 6px 0;
 }
 
 .separator {
-  margin: 0 10px;
+  margin: 0 8px;
 }
 
 .genres-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 15px;
 }
 
 .genre-pill {
   background-color: rgba(255, 255, 255, 0.1);
-  padding: 5px 15px;
+  padding: 4px 12px;
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.genre-pill:hover {
+  background-color: var(--primary-color);
+  transform: translateY(-2px);
 }
 
 .synopsis {
-  color: var(--text-muted);
+  color: var(--text-light);
   line-height: 1.6;
   margin-bottom: 15px;
+  font-size: 1rem;
 }
 
 .director {
@@ -319,11 +359,35 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.poster-thumbnail:hover {
+  transform: scale(1.02);
 }
 
 @media (max-width: 768px) {
+  .player-header {
+    top: 56px; /* Adjust based on your mobile navbar height */
+    padding: 10px;
+  }
+  
+  .back-button {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+  
+  .back-button i {
+    font-size: 16px;
+  }
+  
+  .playing-title {
+    font-size: 1rem;
+  }
+  
   .video-container {
-    height: 50vh;
+    height: 40vh;
+    margin-top: 50px;
   }
 
   .player-icon {
@@ -340,5 +404,48 @@
 
   .poster-thumbnail {
     margin-top: 20px;
+  }
+
+  .now-playing-info {
+    padding: 20px 0 40px;
+  }
+
+  .playing-title-full {
+    font-size: 1.5rem;
+  }
+
+  .movie-metadata {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  .separator {
+    margin: 0 6px;
+  }
+
+  .genre-pill {
+    padding: 3px 10px;
+    font-size: 0.8rem;
+  }
+
+  .synopsis {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+  }
+
+  .poster-thumbnail {
+    max-width: 200px;
+    margin: 0 auto 20px;
+  }
+  
+  /* Adjust column ordering on mobile */
+  .now-playing-info .row {
+    flex-direction: column-reverse;
+  }
+  
+  .now-playing-info .col-md-4,
+  .now-playing-info .col-md-8 {
+    width: 100%;
+    padding: 0 15px;
   }
 }
