@@ -76,7 +76,7 @@ export class MovieFormComponent implements OnInit {
 
   // Set file size limits (in bytes)
   readonly MAX_POSTER_SIZE = 5 * 1024 * 1024; // 5MB
-  readonly MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
+  readonly MAX_VIDEO_SIZE = 1024 * 1024 * 1024; // 100MB
 
   // File size formatting helper
   formatFileSize(bytes: number): string {
@@ -445,5 +445,17 @@ export class MovieFormComponent implements OnInit {
     }
 
     releaseDateControl?.updateValueAndValidity();
+  }
+
+  // Add method to get rating description based on rating value
+  getRatingDescription(rating: number): string {
+    if (rating >= 9) return 'Exceptional';
+    if (rating >= 8) return 'Excellent';
+    if (rating >= 7) return 'Very Good';
+    if (rating >= 6) return 'Good';
+    if (rating >= 5) return 'Average';
+    if (rating >= 3) return 'Below Average';
+    if (rating > 0) return 'Poor';
+    return 'Not Rated';
   }
 }

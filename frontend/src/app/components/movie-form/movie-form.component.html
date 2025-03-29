@@ -169,18 +169,31 @@
                             <div class="form-group mb-4">
                                 <label for="rating" class="form-label">Rating (0-10)</label>
                                 <div class="rating-slider-wrapper">
+                                    <div class="rating-info">
+                                        <div class="rating-value">{{ movieForm.get('rating')?.value || 0 }}</div>
+                                        <div class="rating-label">/ 10</div>
+                                    </div>
+
                                     <div class="rating-slider-container">
                                         <input type="range" id="rating" class="form-range" formControlName="rating"
                                             min="0" max="10" step="0.1">
-                                        <div class="rating-value-container">
-                                            <div class="rating-value">{{ movieForm.get('rating')?.value || 0 }}</div>
+                                        <div class="rating-track">
+                                            <div class="rating-progress"
+                                                [style.width.%]="(movieForm.get('rating')?.value || 0) * 10"></div>
                                         </div>
                                     </div>
-                                    <div class="rating-stars">
-                                        <i *ngFor="let star of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" class="bi"
-                                            [class.bi-star-fill]="star <= (movieForm.get('rating')?.value || 0)"
-                                            [class.bi-star]="star > (movieForm.get('rating')?.value || 0)">
-                                        </i>
+
+                                    <div class="rating-stars-container">
+                                        <div class="rating-stars">
+                                            <i *ngFor="let star of [1, 2, 3, 4, 5]" class="bi"
+                                                [class.bi-star-fill]="star <= ((movieForm.get('rating')?.value || 0) / 2)"
+                                                [class.bi-star-half]="star > ((movieForm.get('rating')?.value || 0) / 2) && star <= (((movieForm.get('rating')?.value || 0) / 2) + 0.25)"
+                                                [class.bi-star]="star > (((movieForm.get('rating')?.value || 0) / 2) + 0.25)">
+                                            </i>
+                                        </div>
+                                        <div class="rating-description">
+                                            {{ getRatingDescription(movieForm.get('rating')?.value || 0) }}
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="invalid-feedback d-block"
