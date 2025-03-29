@@ -296,6 +296,47 @@
                                                     <span *ngIf="videoFile">{{ videoFileName }}</span>
                                                 </div>
                                             </div>
+
+                                            <!-- Video Upload Progress Bar -->
+                                            <div *ngIf="videoUploadProgress.state !== 'PENDING'"
+                                                class="upload-progress-container mt-2">
+                                                <div class="progress-info d-flex justify-content-between">
+                                                    <span class="progress-status"
+                                                        *ngIf="videoUploadProgress.state === 'IN_PROGRESS'">
+                                                        Uploading... {{ videoUploadProgress.progress }}%
+                                                    </span>
+                                                    <span class="progress-status"
+                                                        *ngIf="videoUploadProgress.state === 'DONE'">
+                                                        <i class="bi bi-check-circle text-success"></i> Upload complete
+                                                    </span>
+                                                    <span class="progress-status text-danger"
+                                                        *ngIf="videoUploadProgress.state === 'ERROR'">
+                                                        <i class="bi bi-exclamation-circle"></i> Error: {{
+                                                        videoUploadProgress.error }}
+                                                    </span>
+
+                                                    <div class="progress-actions">
+                                                        <button *ngIf="videoUploadProgress.state === 'IN_PROGRESS'"
+                                                            type="button" class="btn-cancel-upload"
+                                                            (click)="cancelVideoUpload()">
+                                                            <i class="bi bi-x-circle"></i> Cancel
+                                                        </button>
+                                                        <button
+                                                            *ngIf="videoUploadProgress.state === 'DONE' || videoUploadProgress.state === 'ERROR'"
+                                                            type="button" class="btn-remove-file"
+                                                            (click)="removeVideoFile()">
+                                                            <i class="bi bi-trash"></i> Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Progress bar -->
+                                                <mat-progress-bar
+                                                    [mode]="videoUploadProgress.state === 'IN_PROGRESS' ? 'determinate' : 'determinate'"
+                                                    [value]="videoUploadProgress.progress"
+                                                    [color]="videoUploadProgress.state === 'ERROR' ? 'warn' : 'primary'">
+                                                </mat-progress-bar>
+                                            </div>
                                         </div>
                                         <small class="form-text text-muted">Supported formats: MP4, WebM, MOV (max
                                             {{ formatFileSize(MAX_VIDEO_SIZE) }})</small>
@@ -371,6 +412,47 @@
                                                 <span *ngIf="!posterFile">Drop image here or click to browse</span>
                                                 <span *ngIf="posterFile">{{ posterFile.name }}</span>
                                             </div>
+                                        </div>
+
+                                        <!-- Poster Upload Progress Bar -->
+                                        <div *ngIf="posterUploadProgress.state !== 'PENDING'"
+                                            class="upload-progress-container mt-2">
+                                            <div class="progress-info d-flex justify-content-between">
+                                                <span class="progress-status"
+                                                    *ngIf="posterUploadProgress.state === 'IN_PROGRESS'">
+                                                    Uploading... {{ posterUploadProgress.progress }}%
+                                                </span>
+                                                <span class="progress-status"
+                                                    *ngIf="posterUploadProgress.state === 'DONE'">
+                                                    <i class="bi bi-check-circle text-success"></i> Upload complete
+                                                </span>
+                                                <span class="progress-status text-danger"
+                                                    *ngIf="posterUploadProgress.state === 'ERROR'">
+                                                    <i class="bi bi-exclamation-circle"></i> Error: {{
+                                                    posterUploadProgress.error }}
+                                                </span>
+
+                                                <div class="progress-actions">
+                                                    <button *ngIf="posterUploadProgress.state === 'IN_PROGRESS'"
+                                                        type="button" class="btn-cancel-upload"
+                                                        (click)="cancelPosterUpload()">
+                                                        <i class="bi bi-x-circle"></i> Cancel
+                                                    </button>
+                                                    <button
+                                                        *ngIf="posterUploadProgress.state === 'DONE' || posterUploadProgress.state === 'ERROR'"
+                                                        type="button" class="btn-remove-file"
+                                                        (click)="removePosterFile()">
+                                                        <i class="bi bi-trash"></i> Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Progress bar -->
+                                            <mat-progress-bar
+                                                [mode]="posterUploadProgress.state === 'IN_PROGRESS' ? 'determinate' : 'determinate'"
+                                                [value]="posterUploadProgress.progress"
+                                                [color]="posterUploadProgress.state === 'ERROR' ? 'warn' : 'primary'">
+                                            </mat-progress-bar>
                                         </div>
                                     </div>
                                     <small class="form-text text-muted">Supported formats: JPG, PNG, WebP (max {{

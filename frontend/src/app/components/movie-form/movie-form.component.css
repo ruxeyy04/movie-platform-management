@@ -920,3 +920,79 @@ input[matDatepicker] {
   font-size: 0.8rem;
   margin-top: 5px;
 }
+
+/* Upload progress styles */
+.upload-progress-container {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.progress-status {
+  color: white;
+  font-size: 0.9rem;
+}
+
+.progress-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-cancel-upload, .btn-remove-file {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 3px 8px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-cancel-upload:hover {
+  color: #e74c3c;
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.btn-remove-file:hover {
+  color: #e74c3c;
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.text-success {
+  color: #2ecc71 !important;
+}
+
+.text-danger {
+  color: #e74c3c !important;
+}
+
+/* Make the progress bar more visible on dark background */
+::ng-deep .mat-mdc-progress-bar {
+  height: 6px !important;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+::ng-deep .mat-mdc-progress-bar .mdc-linear-progress__bar-inner {
+  border-top-width: 6px !important;
+}
+
+::ng-deep .mat-mdc-progress-bar.mat-warn .mdc-linear-progress__bar-inner {
+  border-color: #e74c3c !important;
+}
+
+::ng-deep .mat-mdc-progress-bar.mat-primary .mdc-linear-progress__bar-inner {
+  border-color: #3498db !important;
+}

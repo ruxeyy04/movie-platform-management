@@ -1,11 +1,16 @@
-from django.urls import path, include
+from django.urls import path
+from .views import home, GenreViewSet, MovieViewSet, upload_poster, upload_video, delete_file
 from rest_framework.routers import DefaultRouter
-from . import views
 
+# Create a router and register viewsets
 router = DefaultRouter()
-router.register(r'movies', views.MovieViewSet)
-router.register(r'genres', views.GenreViewSet)
+router.register(r'genres', GenreViewSet, basename='genre')
+router.register(r'movies', MovieViewSet, basename='movie')
 
-urlpatterns = [
-    path('', include(router.urls)),
+# Get URL patterns from the router and add other URL patterns
+urlpatterns = router.urls + [
+    path('', home, name='home'),
+    path('upload/poster/', upload_poster, name='upload_poster'),
+    path('upload/video/', upload_video, name='upload_video'),
+    path('upload/delete/', delete_file, name='delete_file'),
 ]

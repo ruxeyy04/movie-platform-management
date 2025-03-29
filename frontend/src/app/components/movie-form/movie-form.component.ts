@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MovieService } from '../../services/movie.service';
+import { FileUploadService, UploadProgress } from '../../services/file-upload.service';
 import { Movie } from '../../models/movie.model';
 import { Location } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
@@ -11,7 +12,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatNativeDateModule, MAT_DATE_FORMATS, DateAdapter } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { Subscription } from 'rxjs';
 
 // Custom date formats to match Netflix style
 export const NETFLIX_DATE_FORMATS = {
@@ -38,13 +41,14 @@ export const NETFLIX_DATE_FORMATS = {
     MatInputModule,
     MatFormFieldModule,
     MatNativeDateModule,
-    MatIconModule
+    MatIconModule,
+    MatProgressBarModule
   ],
   providers: [
     { provide: MAT_DATE_FORMATS, useValue: NETFLIX_DATE_FORMATS }
   ]
 })
-export class MovieFormComponent implements OnInit {
+export class MovieFormComponent implements OnInit, OnDestroy {
   movieForm!: FormGroup;
   isEditMode = false;
   movieId: number | null = null;
@@ -66,6 +70,17 @@ export class MovieFormComponent implements OnInit {
   posterSizeError = false;
   videoSizeError = false;
 
+  // Upload progress tracking
+  posterUploadId: string | null = null;
+  videoUploadId: string | null = null;
+  posterUploadProgress: UploadProgress = { state: 'PENDING', progress: 0 };
+  videoUploadProgress: UploadProgress = { state: 'PENDING', progress: 0 };
+  uploadedPosterUrl: string | null = null;
+  uploadedVideoUrl: string | null = null;
+
+  // Subscriptions for uploads
+  private subscriptions: Subscription[] = [];
+
   // Predefined list of common movie genres
   genreOptions: string[] = [
     'Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime',
@@ -75,8 +90,8 @@ export class MovieFormComponent implements OnInit {
   ];
 
   // Set file size limits (in bytes)
-  readonly MAX_POSTER_SIZE = 5 * 1024 * 1024; // 5MB
-  readonly MAX_VIDEO_SIZE = 1024 * 1024 * 1024; // 100MB
+  readonly MAX_POSTER_SIZE = 10 * 1024 * 1024; // 10MB
+  readonly MAX_VIDEO_SIZE = 1024 * 1024 * 1024; // 1GB
 
   // File size formatting helper
   formatFileSize(bytes: number): string {
@@ -91,10 +106,12 @@ export class MovieFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private movieService: MovieService,
+    private uploadService: FileUploadService,
     private location: Location,
     private notificationService: NotificationService,
     private sanitizer: DomSanitizer
   ) { }
+
   ngOnInit(): void {
     this.initForm();
 
@@ -105,6 +122,15 @@ export class MovieFormComponent implements OnInit {
       this.movieId = Number(id);
       this.loadMovie(this.movieId);
     }
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe from all subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+
+    // Cancel any in-progress uploads
+    this.cancelPosterUpload();
+    this.cancelVideoUpload();
   }
 
   initForm(): void {
@@ -142,6 +168,9 @@ export class MovieFormComponent implements OnInit {
       posterUrlControl?.setValidators([Validators.required, Validators.pattern(/^https?:\/\/.+/)]);
     } else {
       posterUrlControl?.clearValidators();
+      if (this.uploadedPosterUrl) {
+        posterUrlControl?.setValue(this.uploadedPosterUrl);
+      }
     }
 
     posterUrlControl?.updateValueAndValidity();
@@ -154,6 +183,9 @@ export class MovieFormComponent implements OnInit {
       videoUrlControl?.setValidators([Validators.required, Validators.pattern(/^https?:\/\/.+/)]);
     } else {
       videoUrlControl?.clearValidators();
+      if (this.uploadedVideoUrl) {
+        videoUrlControl?.setValue(this.uploadedVideoUrl);
+      }
     }
 
     videoUrlControl?.updateValueAndValidity();
@@ -168,8 +200,11 @@ export class MovieFormComponent implements OnInit {
     if (useUrl) {
       this.posterFile = null;
       this.posterFilePreview = null;
+      this.cancelPosterUpload();
     } else {
-      this.movieForm.get('posterUrl')?.setValue('');
+      if (!this.uploadedPosterUrl) {
+        this.movieForm.get('posterUrl')?.setValue('');
+      }
       this.posterPreview = null;
     }
   }
@@ -183,8 +218,11 @@ export class MovieFormComponent implements OnInit {
     if (useUrl) {
       this.videoFile = null;
       this.videoFileName = null;
+      this.cancelVideoUpload();
     } else {
-      this.movieForm.get('videoUrl')?.setValue('');
+      if (!this.uploadedVideoUrl) {
+        this.movieForm.get('videoUrl')?.setValue('');
+      }
     }
   }
 
@@ -218,6 +256,9 @@ export class MovieFormComponent implements OnInit {
         this.posterPreview = reader.result as string;
       };
       reader.readAsDataURL(file);
+
+      // Start uploading
+      this.uploadPosterFile(file);
     }
   }
 
@@ -244,7 +285,116 @@ export class MovieFormComponent implements OnInit {
 
       this.videoFile = file;
       this.videoFileName = file.name;
+
+      // Start uploading
+      this.uploadVideoFile(file);
     }
+  }
+
+  uploadPosterFile(file: File): void {
+    // Cancel any previous upload
+    this.cancelPosterUpload();
+
+    // Start new upload
+    this.posterUploadId = 'poster_' + Date.now();
+    const progress$ = this.uploadService.uploadFile(file, 'poster');
+
+    const sub = progress$.subscribe(progress => {
+      this.posterUploadProgress = progress;
+
+      if (progress.state === 'DONE' && progress.uploadedUrl) {
+        this.uploadedPosterUrl = progress.uploadedUrl;
+        this.movieForm.get('posterUrl')?.setValue(progress.uploadedUrl);
+        this.notificationService.success('Poster uploaded successfully');
+      } else if (progress.state === 'ERROR') {
+        this.notificationService.info(progress.error || 'Unknown error');
+      }
+    });
+
+    this.subscriptions.push(sub);
+  }
+
+  uploadVideoFile(file: File): void {
+    this.cancelVideoUpload();
+
+    this.videoUploadId = 'video_' + Date.now();
+    const progress$ = this.uploadService.uploadFile(file, 'video');
+
+    const sub = progress$.subscribe(progress => {
+      this.videoUploadProgress = progress;
+
+      if (progress.state === 'DONE' && progress.uploadedUrl) {
+        this.uploadedVideoUrl = progress.uploadedUrl;
+        this.movieForm.get('videoUrl')?.setValue(progress.uploadedUrl);
+        this.notificationService.success('Video uploaded successfully');
+      } else if (progress.state === 'ERROR') {
+        this.notificationService.info(progress.error || 'Unknown error');
+      }
+    });
+
+    this.subscriptions.push(sub);
+  }
+
+  cancelPosterUpload(): void {
+    if (this.posterUploadId) {
+      this.uploadService.cancelUpload(this.posterUploadId);
+      this.posterUploadId = null;
+      this.posterUploadProgress = { state: 'PENDING', progress: 0 };
+    }
+  }
+
+  cancelVideoUpload(): void {
+    if (this.videoUploadId) {
+      this.uploadService.cancelUpload(this.videoUploadId);
+      this.videoUploadId = null;
+      this.videoUploadProgress = { state: 'PENDING', progress: 0 };
+    }
+  }
+
+  removePosterFile(): void {
+    if (this.uploadedPosterUrl) {
+      this.uploadService.deleteFile(this.uploadedPosterUrl).subscribe({
+        next: (response) => {
+          // this.notificationService.success('Poster file deleted from server');
+        },
+        error: (error) => {
+          this.notificationService.error('Failed to delete poster from server: ' + error.message);
+        }
+      });
+    }
+
+    this.posterFile = null;
+    this.posterFilePreview = null;
+    this.posterPreview = null;
+    this.cancelPosterUpload();
+    this.uploadedPosterUrl = null;
+
+    // Reset file input
+    const fileInput = document.getElementById('posterFile') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  }
+
+  removeVideoFile(): void {
+    if (this.uploadedVideoUrl) {
+      // Delete the file from server
+      this.uploadService.deleteFile(this.uploadedVideoUrl).subscribe({
+        next: (response) => {
+          // this.notificationService.success('Video file deleted from server');
+        },
+        error: (error) => {
+          this.notificationService.error('Failed to delete video from server: ' + error.message);
+        }
+      });
+    }
+
+    this.videoFile = null;
+    this.videoFileName = null;
+    this.cancelVideoUpload();
+    this.uploadedVideoUrl = null;
+
+    // Reset file input
+    const fileInput = document.getElementById('videoFile') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   }
 
   loadMovie(id: number): void {
@@ -254,60 +404,52 @@ export class MovieFormComponent implements OnInit {
         this.updateForm(movie);
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Error loading movie', error);
+      error: (err) => {
+        this.notificationService.error('Failed to load movie: ' + err.message);
         this.loading = false;
-        alert('Failed to load movie details. Redirecting to movie list.');
         this.router.navigate(['/movies']);
       }
     });
   }
 
   updateForm(movie: Movie): void {
-    // Reset genre FormArray
-    const genreFormArray = this.movieForm.get('genre') as FormArray;
-    while (genreFormArray.length) {
-      genreFormArray.removeAt(0);
+    // Set poster & video URLs
+    if (movie.posterUrl) {
+      this.usePosterUrl = true;
+      this.posterPreview = movie.posterUrl;
     }
 
-    // Add each genre to the FormArray
-    if (movie.genre) {
-      movie.genre.forEach(genre => {
-        genreFormArray.push(this.fb.control(genre));
-      });
+    if (movie.videoUrl) {
+      this.useVideoUrl = true;
     }
 
-    // Check if the movie has a release date, if not it's "Coming Soon"
-    this.isComingSoon = movie.releaseDate === null;
+    this.isComingSoon = !movie.releaseDate;
 
-    // If movie is coming soon, disable release date validation
-    if (this.isComingSoon) {
-      const releaseDateControl = this.movieForm.get('releaseDate');
-      releaseDateControl?.clearValidators();
-      releaseDateControl?.updateValueAndValidity();
-    }
-
-    // Prepare release date as Date object if it exists
-    let releaseDate = null;
-    if (movie.releaseDate && !this.isComingSoon) {
-      releaseDate = new Date(movie.releaseDate);
-    }
-
-    // Update form values
     this.movieForm.patchValue({
       title: movie.title,
       description: movie.description,
-      releaseYear: movie.releaseYear,
-      releaseDate: releaseDate, // Now properly a Date object or null
       director: movie.director,
+      releaseYear: movie.releaseYear,
+      releaseDate: movie.releaseDate ? new Date(movie.releaseDate) : null,
       duration: movie.duration,
       rating: movie.rating,
       posterUrl: movie.posterUrl,
       videoUrl: movie.videoUrl
     });
 
-    // Update poster preview
-    this.posterPreview = movie.posterUrl;
+    // Clear and set genres
+    const genreArray = this.movieForm.get('genre') as FormArray;
+    genreArray.clear();
+
+    if (movie.genre && Array.isArray(movie.genre)) {
+      movie.genre.forEach(genre => {
+        genreArray.push(this.fb.control(genre));
+      });
+    }
+
+    // Update validators based on URL/file choice
+    this.updatePosterValidators();
+    this.updateVideoValidators();
   }
 
   get genreArray(): FormArray {
@@ -315,103 +457,107 @@ export class MovieFormComponent implements OnInit {
   }
 
   addGenre(genre: string): void {
-    const genreArray = this.movieForm.get('genre') as FormArray;
-    if (!genreArray.value.includes(genre) && genre.trim() !== '') {
-      genreArray.push(this.fb.control(genre));
+    if (!this.isGenreSelected(genre)) {
+      this.genreArray.push(this.fb.control(genre));
     }
   }
 
   removeGenre(index: number): void {
-    const genreArray = this.movieForm.get('genre') as FormArray;
-    genreArray.removeAt(index);
+    this.genreArray.removeAt(index);
   }
 
   isValidUrl(url: string): boolean {
     try {
-      new URL(url);
-      return true;
-    } catch (e) {
+      // Basic URL validation
+      const validUrl = new URL(url);
+      return validUrl.protocol === 'http:' || validUrl.protocol === 'https:';
+    } catch {
       return false;
     }
   }
 
   onSubmit(): void {
-    if (this.movieForm.invalid || (!this.usePosterUrl && !this.posterFile) || (!this.useVideoUrl && !this.videoFile)) {
-      // Mark all fields as touched to show validation errors
+    if (this.posterUploadProgress.state === 'IN_PROGRESS' || this.videoUploadProgress.state === 'IN_PROGRESS') {
+      this.notificationService.error('Please wait for uploads to complete before submitting the form');
+      return;
+    }
+
+    this.submitted = true;
+
+    if (this.movieForm.invalid) {
+      // Mark all fields as touched to trigger validation messages
       Object.keys(this.movieForm.controls).forEach(key => {
         const control = this.movieForm.get(key);
         control?.markAsTouched();
       });
-
-      if (!this.usePosterUrl && !this.posterFile) {
-        this.notificationService.warning('Please upload a poster image');
-      }
-
-      if (!this.useVideoUrl && !this.videoFile) {
-        this.notificationService.warning('Please upload a video file');
-      }
-
-      this.notificationService.warning('Please fix the validation errors before submitting.');
+      this.notificationService.error('Please fix the errors in the form before submitting.');
       return;
     }
 
-    // In a real application, you would upload the files to a server here
-    // and get back URLs to use in your movie data
-    // For this implementation, we'll simulate this by creating object URLs
+    const movieData: Movie = this.prepareMovieData();
+    this.submitMovie(movieData);
+  }
 
-    let posterUrlToUse = this.usePosterUrl ? this.movieForm.value.posterUrl : null;
-    let videoUrlToUse = this.useVideoUrl ? this.movieForm.value.videoUrl : null;
+  prepareMovieData(): Movie {
+    // Get form values
+    const formModel = this.movieForm.value;
 
-    // In a real app, this would be an API call to upload files
-    if (!this.usePosterUrl && this.posterFile) {
-      // Simulate uploaded file URL - in a real app, you'd get this from your server
-      posterUrlToUse = this.posterPreview;
+    // Transform data if needed
+    let releaseDate = null;
+    if (!this.isComingSoon && formModel.releaseDate) {
+      // Format date to ISO string
+      releaseDate = new Date(formModel.releaseDate).toISOString().split('T')[0];
     }
 
-    if (!this.useVideoUrl && this.videoFile) {
-      // Simulate uploaded file URL - in a real app, you'd get this from your server
-      videoUrlToUse = `https://example.com/uploads/${this.videoFileName}`;
-    }
-
-    // Get the form values and prepare data for submission
-    const formValues = this.movieForm.value;
-    const movieData: Movie = {
-      ...formValues,
-      // Format the date if it exists and not in Coming Soon mode
-      releaseDate: this.isComingSoon ? null : formValues.releaseDate,
-      // Use the correct URLs based on input type
-      posterUrl: posterUrlToUse,
-      videoUrl: videoUrlToUse
+    // Create the movie object
+    const movie: Movie = {
+      title: formModel.title,
+      description: formModel.description,
+      director: formModel.director,
+      releaseYear: formModel.releaseYear,
+      releaseDate: releaseDate,
+      duration: formModel.duration,
+      rating: formModel.rating,
+      genre: formModel.genre,
+      posterUrl: formModel.posterUrl,
+      videoUrl: formModel.videoUrl
     };
 
+    // Add ID if in edit mode
+    if (this.isEditMode && this.movieId) {
+      movie.id = this.movieId;
+    }
+
+    return movie;
+  }
+
+  submitMovie(movie: Movie): void {
     this.submitting = true;
 
     if (this.isEditMode && this.movieId) {
       // Update existing movie
-      this.movieService.updateMovie(this.movieId, movieData).subscribe({
-        next: (updatedMovie) => {
+      this.movieService.updateMovie(this.movieId, movie).subscribe({
+        next: () => {
+          this.notificationService.success('Movie updated successfully');
           this.submitting = false;
-          this.notificationService.success(`"${updatedMovie.title}" has been updated successfully.`);
-          this.router.navigate(['/movies', updatedMovie.id]);
+          this.router.navigate(['/movies']);
         },
-        error: (error) => {
-          console.error('Error updating movie', error);
+        error: (err) => {
+          this.notificationService.error('Failed to update movie: ' + err.message);
           this.submitting = false;
-          this.notificationService.error('Failed to update movie. Please try again.');
         }
       });
     } else {
       // Create new movie
-      this.movieService.addMovie(movieData).subscribe({
-        next: (newMovie) => {
+      this.movieService.addMovie(movie).subscribe({
+        next: () => {
+          this.notificationService.success('Movie created successfully');
           this.submitting = false;
-          this.notificationService.success(`"${newMovie.title}" has been added successfully.`);
-          this.router.navigate(['/movies', newMovie.id]);
+          this.router.navigate(['/movies']);
         },
-        error: (error) => {
-          console.error('Error creating movie', error);
+        error: (err) => {
+          this.notificationService.error('Failed to create movie: ' + err.message);
           this.submitting = false;
-          this.notificationService.error('Failed to create movie. Please try again.');
         }
       });
     }
@@ -420,42 +566,47 @@ export class MovieFormComponent implements OnInit {
   goBack(): void {
     this.location.back();
   }
+
   getCurrentYear(): number {
     return new Date().getFullYear();
   }
-  // Add this method to MovieFormComponent to check if a genre is already selected
+
   isGenreSelected(genre: string): boolean {
     return this.genreArray.value.includes(genre);
   }
 
-  // Handle Coming Soon toggle
   toggleComingSoon(event: Event): void {
-    const isChecked = (event.target as HTMLInputElement).checked;
-    this.isComingSoon = isChecked;
+    const checkbox = event.target as HTMLInputElement;
+    this.isComingSoon = checkbox.checked;
 
     const releaseDateControl = this.movieForm.get('releaseDate');
 
-    if (isChecked) {
-      // Coming soon is checked, so remove validation
-      releaseDateControl?.clearValidators();
+    if (this.isComingSoon) {
+      // If "Coming Soon" is checked, clear and disable releaseDate
       releaseDateControl?.setValue(null);
+      releaseDateControl?.clearValidators();
     } else {
-      // Coming soon is unchecked, so add validation back
+      // If "Coming Soon" is unchecked, add required validator
       releaseDateControl?.setValidators([Validators.required]);
     }
 
+    // Update the control
     releaseDateControl?.updateValueAndValidity();
   }
 
-  // Add method to get rating description based on rating value
   getRatingDescription(rating: number): string {
-    if (rating >= 9) return 'Exceptional';
+    if (rating >= 9) return 'Masterpiece';
     if (rating >= 8) return 'Excellent';
     if (rating >= 7) return 'Very Good';
     if (rating >= 6) return 'Good';
     if (rating >= 5) return 'Average';
-    if (rating >= 3) return 'Below Average';
-    if (rating > 0) return 'Poor';
+    if (rating >= 4) return 'Below Average';
+    if (rating >= 3) return 'Poor';
+    if (rating >= 2) return 'Very Poor';
+    if (rating >= 1) return 'Terrible';
     return 'Not Rated';
   }
+
+  // Added for template use
+  submitted = false;
 }
