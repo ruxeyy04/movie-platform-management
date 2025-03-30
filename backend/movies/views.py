@@ -7,7 +7,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, StreamingHttpResponse, FileResponse
 from django.views import View
 from .models import Movie, Genre
 from .serializers import MovieSerializer, GenreSerializer
@@ -15,7 +15,10 @@ import os
 import uuid
 import logging
 import json
+import re
+import mimetypes
 from urllib.parse import unquote
+from wsgiref.util import FileWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +78,11 @@ class MovieViewSet(viewsets.ModelViewSet):
         if min_rating:
             queryset = queryset.filter(rating__gte=min_rating)
         return queryset
+    
+    def get_serializer_context(self):
+        """Add request to serializer context for URL generation"""
+        context = super().get_serializer_context()
+        return context
     
     @method_decorator(cache_page(60 * 5, key_prefix='movie_list'))  # Cache for 5 minutes
     def list(self, request, *args, **kwargs):
@@ -213,6 +221,7 @@ class FileDeleteView(View):
         except Exception as e:
             logger.error(f"Error deleting file: {str(e)}")
             return JsonResponse({'error': str(e)}, status=500)
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def upload_poster(request):
@@ -230,3 +239,97 @@ def upload_video(request):
 def delete_file(request):
     """Delete an uploaded file"""
     return FileDeleteView.as_view()(request)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def stream_video(request, path):
+    """Stream video file with support for HTTP range requests (required for ngx-videogular)"""
+    try:
+        logger.info(f"Stream request for: {path}")
+        
+        decoded_path = unquote(path)
+        logger.info(f"Decoded path: {decoded_path}")
+        
+        file_path = os.path.join(settings.MEDIA_ROOT, 'movie_videos', decoded_path)
+        
+        if not os.path.exists(file_path):
+            logger.info(f"File not found at: {file_path}")
+            video_dir = os.path.join(settings.MEDIA_ROOT, 'movie_videos')
+            available_files = os.listdir(video_dir)
+            logger.info(f"Available files: {available_files}")
+            
+            if '_' in decoded_path:
+                prefix = decoded_path.split('_')[0]
+                logger.info(f"Looking for files with prefix: {prefix}")
+                
+                matching_files = [f for f in available_files if f.startswith(prefix)]
+                logger.info(f"Matching files: {matching_files}")
+                
+                if matching_files:
+                    file_path = os.path.join(video_dir, matching_files[0])
+                    logger.info(f"Using file: {file_path}")
+                else:
+                    for file in available_files:
+                        if os.path.basename(file) == os.path.basename(decoded_path):
+                            file_path = os.path.join(video_dir, file)
+                            logger.info(f"Found exact filename: {file_path}")
+                            break
+        
+        if not os.path.exists(file_path):
+            logger.error(f"Video file not found: {path}")
+            video_dir = os.path.join(settings.MEDIA_ROOT, 'movie_videos')
+            available_files = os.listdir(video_dir)
+            return HttpResponse(f"Video file not found. Available files: {available_files}", status=404)
+        
+        file_size = os.path.getsize(file_path)
+        
+        content_type, _ = mimetypes.guess_type(file_path)
+        if not content_type:
+            content_type = 'application/octet-stream' 
+        
+        range_header = request.META.get('HTTP_RANGE', '').strip()
+        range_match = re.match(r'bytes=(\d+)-(\d*)', range_header)
+        
+        if range_match:
+            start, end = range_match.groups()
+            start = int(start)
+            end = int(end) if end else file_size - 1
+            length = end - start + 1
+            
+            def file_iterator(start_byte=0, end_byte=None):
+                with open(file_path, 'rb') as f:
+                    f.seek(start_byte)
+                    remaining = length
+                    chunk_size = 8192
+                    
+                    while remaining > 0:
+                        chunk = f.read(min(chunk_size, remaining))
+                        if not chunk:
+                            break
+                        remaining -= len(chunk)
+                        yield chunk
+            
+            response = StreamingHttpResponse(
+                file_iterator(start, end),
+                status=206,
+                content_type=content_type
+            )
+            
+            response['Content-Length'] = str(length)
+            response['Content-Range'] = f'bytes {start}-{end}/{file_size}'
+            response['Accept-Ranges'] = 'bytes'
+        else:
+            # Full file response
+            response = FileResponse(
+                open(file_path, 'rb'),
+                content_type=content_type
+            )
+            response['Content-Length'] = str(file_size)
+            response['Accept-Ranges'] = 'bytes'
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error streaming video: {str(e)}")
+        return HttpResponse(f"Error streaming video: {str(e)}", status=500)
+

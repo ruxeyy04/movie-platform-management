@@ -32,7 +32,7 @@ export class MoviePlayerComponent implements OnInit {
   error = false;
   youtubeVideoUrl: SafeResourceUrl | null = null;
   mediaBaseUrl = environment.MEDIA_URL;
-
+  backendUrl = environment.BACKEND_URL;
   constructor(
     private route: ActivatedRoute,
     private movieService: MovieService,
@@ -64,21 +64,7 @@ export class MoviePlayerComponent implements OnInit {
     this.api.getDefaultMedia().subscriptions.canPlay.subscribe(
       () => {
         console.log('Video can play');
-        if (this.api) {
-          const media = this.api.getDefaultMedia();
-          if (media.state === 'paused') {
-            setTimeout(() => {
-              if (this.api) {
-                this.api.play();
-                setTimeout(() => {
-                  if (this.api && media.canPlay) {
-                    this.api.pause();
-                  }
-                }, 200);
-              }
-            }, 500);
-          }
-        }
+
       }
     );
   }
@@ -158,7 +144,16 @@ export class MoviePlayerComponent implements OnInit {
 
   getFullMediaUrl(path: string | null): string {
     if (!path) return '';
-    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+
+    let cleanPath = path.startsWith('/') ? path.substring(1) : path;
+
+    if (cleanPath.includes('movie_videos')) {
+      cleanPath = cleanPath.replace('/media/', '').replace('movie_videos', 'api/stream');
+      return `${this.backendUrl}/${cleanPath}`;
+    } else if (cleanPath.includes('movie_posters')) {
+      return `${this.mediaBaseUrl}/${cleanPath}`;
+    }
+
     return `${this.mediaBaseUrl}/${cleanPath}`;
   }
 
