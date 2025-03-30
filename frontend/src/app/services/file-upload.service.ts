@@ -252,4 +252,26 @@ export class FileUploadService {
         }
     }
 
+
+    getFullMediaUrl(relativePath: string | null): string | null {
+        if (!relativePath) return null;
+
+        try {
+            // If it's already a full URL, return it as is
+            if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+                return relativePath;
+            }
+
+            // Make sure path doesn't start with a slash
+            const normalizedPath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath;
+
+            // Combine with mediaUrl, ensuring no double slashes
+            const mediaUrlBase = this.mediaUrl.endsWith('/') ? this.mediaUrl : `${this.mediaUrl}/`;
+            return `${mediaUrlBase}${normalizedPath}`;
+        } catch (error) {
+            console.error('Error creating full media URL:', error);
+            return null;
+        }
+    }
+
 }

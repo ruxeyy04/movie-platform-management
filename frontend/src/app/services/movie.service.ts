@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
-import { catchError, finalize } from 'rxjs/operators';
+import { Observable, of, throwError, BehaviorSubject, from } from 'rxjs';
+import { catchError, finalize, map } from 'rxjs/operators';
 import { Movie } from '../models/movie.model';
 import { MOVIES } from './mock-movies';
 import { environment } from '../../environments/environment';
 import { PaginatedResponse } from './genre.service';
+import { FileUploadService } from './file-upload.service';
+import axios, { AxiosRequestConfig } from 'axios';
 
 @Injectable({
     providedIn: 'root'
@@ -13,7 +14,7 @@ import { PaginatedResponse } from './genre.service';
 export class MovieService {
     private apiUrl = environment.MOVIE_API_URL;
     private useMock = environment.movie_mock_data;
-    private axiosConfig = {
+    private axiosConfig: AxiosRequestConfig = {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Basic ' + btoa(environment.AUTH_USERNAME + ':' + environment.AUTH_PASSWORD),
@@ -30,7 +31,9 @@ export class MovieService {
     listLoading$ = this.loadingList.asObservable();
     deleteLoading$ = this.loadingDelete.asObservable();
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private fileUploadService: FileUploadService
+    ) { }
 
     getMovies(page: number = 1): Observable<PaginatedResponse<Movie>> {
         if (this.useMock) {
@@ -44,8 +47,15 @@ export class MovieService {
         }
 
         this.loadingList.next(true);
-        return this.http.get<PaginatedResponse<Movie>>(`${this.apiUrl}?page=${page}`, this.axiosConfig)
+
+        return from(axios.get<PaginatedResponse<Movie>>(`${this.apiUrl}?page=${page}`, this.axiosConfig))
             .pipe(
+                map(response => {
+                    // Transform each movie in the results to set proper URLs
+                    const data = response.data;
+                    data.results = data.results.map(movie => this.transformMovieUrls(movie));
+                    return data;
+                }),
                 catchError(this.handleError),
                 finalize(() => this.loadingList.next(false))
             );
@@ -59,8 +69,33 @@ export class MovieService {
             }
             return of({ ...movie });
         }
-        return this.http.get<Movie>(`${this.apiUrl}${id}/`, this.axiosConfig)
-            .pipe(catchError(this.handleError));
+
+        return from(axios.get<Movie>(`${this.apiUrl}${id}/`, this.axiosConfig))
+            .pipe(
+                map(response => this.transformMovieUrls(response.data)),
+                catchError(this.handleError)
+            );
+    }
+
+    private transformMovieUrls(movie: Movie): Movie {
+        const transformed = { ...movie };
+
+        // Handle poster URL - use posterUploadFile_url if available, otherwise use posterUrl
+        if (movie.posterUploadFile_url) {
+            transformed.posterUrl = this.fileUploadService.getFullMediaUrl(movie.posterUploadFile_url) || movie.posterUrl;
+        }
+
+        // Handle video URL - use videoUploadFile_url if available, otherwise use videoUrl
+        if (movie.videoUploadFile_url) {
+            transformed.videoUrl = this.fileUploadService.getFullMediaUrl(movie.videoUploadFile_url) || movie.videoUrl;
+        }
+
+        // Convert API genres array to string array if needed
+        if (movie.genres && Array.isArray(movie.genres) && (!movie.genre || movie.genre.length === 0)) {
+            transformed.genre = movie.genres.map(g => g.name);
+        }
+
+        return transformed;
     }
 
     addMovie(movie: Movie): Observable<Movie> {
@@ -70,8 +105,12 @@ export class MovieService {
             MOVIES.push(newMovie);
             return of({ ...newMovie });
         }
-        return this.http.post<Movie>(this.apiUrl, movie, this.axiosConfig)
-            .pipe(catchError(this.handleError));
+
+        return from(axios.post<Movie>(this.apiUrl, movie, this.axiosConfig))
+            .pipe(
+                map(response => this.transformMovieUrls(response.data)),
+                catchError(this.handleError)
+            );
     }
 
     updateMovie(id: number, movie: Movie): Observable<Movie> {
@@ -84,8 +123,12 @@ export class MovieService {
             MOVIES[index] = updatedMovie;
             return of({ ...updatedMovie });
         }
-        return this.http.put<Movie>(`${this.apiUrl}${id}/`, movie, this.axiosConfig)
-            .pipe(catchError(this.handleError));
+
+        return from(axios.put<Movie>(`${this.apiUrl}${id}/`, movie, this.axiosConfig))
+            .pipe(
+                map(response => this.transformMovieUrls(response.data)),
+                catchError(this.handleError)
+            );
     }
 
     deleteMovie(id: number): Observable<void> {
@@ -99,8 +142,10 @@ export class MovieService {
         }
 
         this.loadingDelete.next(true);
-        return this.http.delete<void>(`${this.apiUrl}${id}/`, this.axiosConfig)
+
+        return from(axios.delete<void>(`${this.apiUrl}${id}/`, this.axiosConfig))
             .pipe(
+                map(() => undefined), // Return void
                 catchError(this.handleError),
                 finalize(() => this.loadingDelete.next(false))
             );
@@ -112,13 +157,24 @@ export class MovieService {
         return match ? parseInt(match[1], 10) : 1;
     }
 
-    private handleError(error: HttpErrorResponse) {
-        let errorMessage = '';
-        if (error.error instanceof ErrorEvent) {
-            errorMessage = `Error: ${error.error.message}`;
-        } else {
-            errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+    private handleError(error: any) {
+        let errorMessage = 'An unknown error occurred';
+
+        if (axios.isAxiosError(error)) {
+            if (error.response) {
+                // Server responded with a status code outside of 2xx
+                errorMessage = `Error Code: ${error.response.status}\nMessage: ${error.response.data?.message || error.message}`;
+            } else if (error.request) {
+                // Request was made but no response received
+                errorMessage = 'No response received from server';
+            } else {
+                // Error setting up the request
+                errorMessage = error.message;
+            }
+        } else if (error instanceof Error) {
+            errorMessage = error.message;
         }
+
         console.error(errorMessage);
         return throwError(() => new Error(errorMessage));
     }
