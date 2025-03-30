@@ -9,5 +9,7 @@ export interface Movie {
     duration: number; // in minutes
     rating: number; // 1-10
     posterUrl: string;
+    posterUploadFile_url: string | null;
     videoUrl: string;
+    videoUploadFile_url: string | null;
 }
