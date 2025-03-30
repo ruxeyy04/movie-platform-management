@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } fr
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MovieService } from '../../services/movie.service';
+import { GenreService } from '../../services/genre.service';
 import { FileUploadService, UploadProgress } from '../../services/file-upload.service';
 import { Movie } from '../../models/movie.model';
 import { Location } from '@angular/common';
@@ -82,12 +83,10 @@ export class MovieFormComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   // Predefined list of common movie genres
-  genreOptions: string[] = [
-    'Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime',
-    'Documentary', 'Drama', 'Family', 'Fantasy', 'History', 'Horror',
-    'Music', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Sport',
-    'Thriller', 'War', 'Western'
-  ];
+  genreOptions: string[] = [];
+
+  // Loading indicator for genres
+  loadingGenres = false;
 
   // Set file size limits (in bytes)
   readonly MAX_POSTER_SIZE = 10 * 1024 * 1024; // 10MB
@@ -106,6 +105,7 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private movieService: MovieService,
+    private genreService: GenreService,
     private uploadService: FileUploadService,
     private location: Location,
     private notificationService: NotificationService,
@@ -114,6 +114,7 @@ export class MovieFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initForm();
+    this.loadGenres();
 
     // Check if we're in edit mode
     const id = this.route.snapshot.paramMap.get('id');
@@ -144,7 +145,9 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       duration: ['', [Validators.required, Validators.min(1), Validators.max(600)]],
       rating: ['', [Validators.required, Validators.min(0), Validators.max(10)]],
       posterUrl: [''],
-      videoUrl: ['']
+      videoUrl: [''],
+      posterUploadFile_url: [''],
+      videoUploadFile_url: ['']
     });
 
     // Set validators based on URL/file choice
@@ -302,9 +305,9 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     const sub = progress$.subscribe(progress => {
       this.posterUploadProgress = progress;
 
-      if (progress.state === 'DONE' && progress.uploadedUrl) {
-        this.uploadedPosterUrl = progress.uploadedUrl;
-        this.movieForm.get('posterUrl')?.setValue(progress.uploadedUrl);
+      if (progress.state === 'DONE' && progress.filePath) {
+        this.uploadedPosterUrl = progress.filePath;
+        this.movieForm.get('posterUrl')?.setValue(null);
         this.notificationService.success('Poster uploaded successfully');
       } else if (progress.state === 'ERROR') {
         this.notificationService.info(progress.error || 'Unknown error');
@@ -323,9 +326,9 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     const sub = progress$.subscribe(progress => {
       this.videoUploadProgress = progress;
 
-      if (progress.state === 'DONE' && progress.uploadedUrl) {
-        this.uploadedVideoUrl = progress.uploadedUrl;
-        this.movieForm.get('videoUrl')?.setValue(progress.uploadedUrl);
+      if (progress.state === 'DONE' && progress.filePath) {
+        this.uploadedVideoUrl = progress.filePath;
+        this.movieForm.get('videoUrl')?.setValue(null);
         this.notificationService.success('Video uploaded successfully');
       } else if (progress.state === 'ERROR') {
         this.notificationService.info(progress.error || 'Unknown error');
@@ -362,13 +365,12 @@ export class MovieFormComponent implements OnInit, OnDestroy {
         }
       });
     }
-
+    this.movieForm.get('posterUrl')?.setValue('');
     this.posterFile = null;
     this.posterFilePreview = null;
     this.posterPreview = null;
     this.cancelPosterUpload();
     this.uploadedPosterUrl = null;
-
     // Reset file input
     const fileInput = document.getElementById('posterFile') as HTMLInputElement;
     if (fileInput) fileInput.value = '';
@@ -386,7 +388,7 @@ export class MovieFormComponent implements OnInit, OnDestroy {
         }
       });
     }
-
+    this.movieForm.get('videoUrl')?.setValue('');
     this.videoFile = null;
     this.videoFileName = null;
     this.cancelVideoUpload();
@@ -434,7 +436,9 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       duration: movie.duration,
       rating: movie.rating,
       posterUrl: movie.posterUrl,
-      videoUrl: movie.videoUrl
+      videoUrl: movie.videoUrl,
+      posterUploadFile_url: movie.posterUploadFile_url,
+      videoUploadFile_url: movie.videoUploadFile_url
     });
 
     // Clear and set genres
@@ -520,7 +524,9 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       rating: formModel.rating,
       genre: formModel.genre,
       posterUrl: formModel.posterUrl,
-      videoUrl: formModel.videoUrl
+      videoUrl: formModel.videoUrl,
+      posterUploadFile_url: this.uploadedPosterUrl || null,
+      videoUploadFile_url: this.uploadedVideoUrl || null
     };
 
     // Add ID if in edit mode
@@ -607,6 +613,29 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     return 'Not Rated';
   }
 
-  // Added for template use
   submitted = false;
+
+  loadGenres(): void {
+    this.loadingGenres = true;
+
+    const genreSub = this.genreService.getAllGenres().subscribe({
+      next: (genres) => {
+        this.genreOptions = genres.map(genre => genre.name);
+        this.loadingGenres = false;
+      },
+      error: (error) => {
+        this.notificationService.error('Failed to load genres: ' + error.message);
+        this.loadingGenres = false;
+
+        this.genreOptions = [
+          'Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime',
+          'Documentary', 'Drama', 'Family', 'Fantasy', 'History', 'Horror',
+          'Music', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Sport',
+          'Thriller', 'War', 'Western'
+        ];
+      }
+    });
+
+    this.subscriptions.push(genreSub);
+  }
 }

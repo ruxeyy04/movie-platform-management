@@ -11,27 +11,29 @@ class Genre(models.Model):
 class Movie(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    release_date = models.DateField()
+    releaseYear = models.PositiveIntegerField(help_text="Release year", default=2000)
+    releaseDate = models.DateField(null=True, blank=True)
+    director = models.CharField(max_length=255, null=True, blank=True) 
     duration = models.PositiveIntegerField(help_text="Duration in minutes")
     rating = models.DecimalField(
         max_digits=3, 
         decimal_places=1,
         validators=[MinValueValidator(Decimal('0.0')), MaxValueValidator(Decimal('10.0'))]
     )
-    poster = models.ImageField(
+    posterUploadFile_url = models.ImageField(
         upload_to='movie_posters/', 
         null=True, 
         blank=True,
         validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'hevc', 'avif'])]
     )
-    poster_url = models.URLField(null=True, blank=True)
-    video = models.FileField(
+    posterUrl = models.URLField(null=True, blank=True)
+    videoUploadFile_url = models.FileField(
         upload_to='movie_videos/', 
         null=True, 
         blank=True,
         validators=[FileExtensionValidator(allowed_extensions=['mp4', 'avi', 'mov', 'mkv', 'ts', 'm3u8'])]
     )
-    video_url = models.URLField(null=True, blank=True)
+    videoUrl = models.URLField(null=True, blank=True)
     genres = models.ManyToManyField(Genre, related_name='movies')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -12,6 +12,7 @@ export interface UploadProgress {
     uploadedUrl?: string;
     error?: string;
     filename?: string;
+    filePath?: string;
 }
 
 @Injectable({
@@ -19,6 +20,7 @@ export interface UploadProgress {
 })
 export class FileUploadService {
     private apiUrl = environment.FILE_UPLOAD_API_URL;
+    private mediaUrl: string;
     private axiosConfig = {
         headers: {
             'Authorization': 'Basic ' + btoa(environment.AUTH_USERNAME + ':' + environment.AUTH_PASSWORD),
@@ -28,7 +30,10 @@ export class FileUploadService {
     private uploadSubscriptions = new Map<string, Subscription>();
     private cancelSubjects = new Map<string, Subject<void>>();
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) {
+        // Construct the media URL from the backend URL
+        this.mediaUrl = `${environment.BACKEND_URL}/media/`;
+    }
 
     getUploadProgress(uploadId: string): Observable<UploadProgress> {
         if (!this.uploadsMap.has(uploadId)) {
@@ -95,9 +100,9 @@ export class FileUploadService {
                         state: 'DONE',
                         progress: 100,
                         uploadedUrl: event.url,
-                        filename: event.filename
+                        filename: event.filename,
+                        filePath: this.extractFilePath(event.url)
                     });
-
                     this.cleanupUpload(uploadId);
                 }
             },
@@ -218,4 +223,33 @@ export class FileUploadService {
         console.error(errorMessage);
         return throwError(() => new Error(errorMessage));
     }
+
+    /**
+     * Extracts the file path from a URL
+     * @param url The full URL to the file
+     * @returns The relative path like "movie_posters/filename.png"
+     */
+    extractFilePath(url: string): string {
+        if (!url) return '';
+
+        try {
+            const mediaIndex = url.indexOf(this.mediaUrl);
+            if (mediaIndex === -1) {
+                const altMediaIndex = url.indexOf('/media/');
+                if (altMediaIndex === -1) return '';
+
+                let path = url.substring(altMediaIndex + 7);
+                path = decodeURIComponent(path).replace(/\\/g, '/');
+                return path;
+            }
+
+            let path = url.substring(mediaIndex + this.mediaUrl.length);
+            path = decodeURIComponent(path).replace(/\\/g, '/');
+            return path;
+        } catch (error) {
+            console.error('Error extracting file path:', error);
+            return '';
+        }
+    }
+
 }

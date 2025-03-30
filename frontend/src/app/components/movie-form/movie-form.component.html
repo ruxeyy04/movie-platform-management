@@ -223,12 +223,28 @@
 
                                     <div class="genre-options-wrapper">
                                         <div class="genre-options-label">Available Genres:</div>
-                                        <div class="genre-options">
+
+                                        <!-- Loading indicator for genres -->
+                                        <div *ngIf="loadingGenres" class="genre-loading">
+                                            <div class="spinner-border spinner-border-sm" role="status">
+                                                <span class="visually-hidden">Loading genres...</span>
+                                            </div>
+                                            <span class="ms-2">Loading genres...</span>
+                                        </div>
+
+                                        <!-- Genre options -->
+                                        <div *ngIf="!loadingGenres" class="genre-options">
                                             <button *ngFor="let option of genreOptions" type="button"
                                                 class="btn-genre-option" [class.selected]="isGenreSelected(option)"
                                                 (click)="addGenre(option)">
                                                 {{ option }}
                                             </button>
+
+                                            <!-- Show message if no genres are available -->
+                                            <div *ngIf="genreOptions.length === 0" class="no-genres-available">
+                                                <i class="bi bi-exclamation-circle"></i> No genres available. Please add
+                                                genres from the manage genres page.
+                                            </div>
                                         </div>
                                     </div>
 
