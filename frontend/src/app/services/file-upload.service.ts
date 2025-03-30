@@ -11,6 +11,7 @@ export interface UploadProgress {
     progress: number;
     uploadedUrl?: string;
     error?: string;
+    filename?: string;
 }
 
 @Injectable({
@@ -42,11 +43,13 @@ export class FileUploadService {
     uploadFile(file: File, type: 'poster' | 'video'): Observable<UploadProgress> {
         const uploadId = `${type}_${Date.now()}`;
 
+        // Process the filename: replace spaces with underscores
         const originalName = file.name;
         const extension = originalName.substring(originalName.lastIndexOf('.'));
         const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
         const processedName = nameWithoutExt.replace(/\s+/g, '_');
 
+        // Create unique filename with format: unique_id_processedname.extension
         const uniqueId = Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
         const uniqueFilename = `${uniqueId}_${processedName}${extension}`;
 
@@ -91,7 +94,8 @@ export class FileUploadService {
                     progressSubject.next({
                         state: 'DONE',
                         progress: 100,
-                        uploadedUrl: event.url
+                        uploadedUrl: event.url,
+                        filename: event.filename
                     });
 
                     this.cleanupUpload(uploadId);
@@ -195,7 +199,8 @@ export class FileUploadService {
             case HttpEventType.Response:
                 return {
                     type: 'complete',
-                    url: event.body?.url || null
+                    url: event.body?.url || null,
+                    filename: event.body?.filename || null
                 };
 
             default:
@@ -213,4 +218,4 @@ export class FileUploadService {
         console.error(errorMessage);
         return throwError(() => new Error(errorMessage));
     }
-} 
+}
