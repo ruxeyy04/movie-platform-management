@@ -1,5 +1,5 @@
 import { enableProdMode, Injectable } from '@angular/core';
-import { Observable, from, of, throwError, BehaviorSubject } from 'rxjs';
+import { Observable, from, of, throwError, BehaviorSubject, lastValueFrom } from 'rxjs';
 import { catchError, map, finalize } from 'rxjs/operators';
 import axios, { AxiosError } from 'axios';
 import { environment } from '../../environments/environment';
@@ -65,6 +65,34 @@ export class GenreService {
                 catchError(this.handleError),
                 finalize(() => this.loadingList.next(false))
             );
+    }
+
+
+    getAllGenres(): Observable<Genre[]> {
+        if (this.useMock) {
+            return of([...GENRES]);
+        }
+
+        this.loadingList.next(true);
+
+        const fetchAllPages = (url: string, allResults: Genre[] = []): Observable<Genre[]> => {
+            return from(axios.get(url, this.axiosConfig)
+                .then(response => {
+                    const data = response.data as PaginatedResponse<Genre>;
+                    const combined = [...allResults, ...data.results];
+
+                    if (data.next) {
+                        return lastValueFrom(fetchAllPages(data.next, combined));
+                    } else {
+                        return combined;
+                    }
+                }));
+        };
+
+        return fetchAllPages(`${this.apiUrl}`, []).pipe(
+            catchError(this.handleError),
+            finalize(() => this.loadingList.next(false))
+        );
     }
 
     getGenre(id: number): Observable<Genre> {
