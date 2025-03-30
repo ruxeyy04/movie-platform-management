@@ -12,7 +12,9 @@ export const MOVIES: Movie[] = [
         duration: 148,
         rating: 8.8,
         posterUrl: 'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_.jpg',
-        videoUrl: 'https://example.com/inception.mp4'
+        videoUrl: 'https://example.com/inception.mp4',
+        posterUploadFile_url: '',
+        videoUploadFile_url: ''
     },
     {
         id: 2,
@@ -25,7 +27,9 @@ export const MOVIES: Movie[] = [
         duration: 142,
         rating: 9.3,
         posterUrl: 'https://m.media-amazon.com/images/M/MV5BNDE3ODcxYzMtY2YzZC00NmNlLWJiNDMtZDViZWM2MzIxZDYwXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg',
-        videoUrl: 'https://example.com/shawshank-redemption.mp4'
+        videoUrl: 'https://example.com/shawshank-redemption.mp4',
+        posterUploadFile_url: '',
+        videoUploadFile_url: ''
     },
     {
         id: 3,
@@ -38,7 +42,9 @@ export const MOVIES: Movie[] = [
         duration: 152,
         rating: 9.0,
         posterUrl: 'https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_.jpg',
-        videoUrl: 'https://example.com/dark-knight.mp4'
+        videoUrl: 'https://example.com/dark-knight.mp4',
+        posterUploadFile_url: '',
+        videoUploadFile_url: ''
     },
     {
         id: 4,
@@ -51,7 +57,9 @@ export const MOVIES: Movie[] = [
         duration: 154,
         rating: 8.9,
         posterUrl: 'https://m.media-amazon.com/images/M/MV5BNGNhMDIzZTUtNTBlZi00MTRlLWFjM2ItYzViMjE3YzI5MjljXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_.jpg',
-        videoUrl: 'https://example.com/pulp-fiction.mp4'
+        videoUrl: 'https://example.com/pulp-fiction.mp4',
+        posterUploadFile_url: '',
+        videoUploadFile_url: ''
     },
     {
         id: 5,
@@ -64,6 +72,8 @@ export const MOVIES: Movie[] = [
         duration: 130,
         rating: 0,
         posterUrl: 'https://dnn24.com/wp-content/uploads/2024/12/Fi_1-.jpg',
-        videoUrl: 'https://example.com/trailer.mp4'
+        videoUrl: 'https://example.com/trailer.mp4',
+        posterUploadFile_url: '',
+        videoUploadFile_url: ''
     }
 ];
