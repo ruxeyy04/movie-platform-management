@@ -36,48 +36,51 @@
 
         <div class="video-container">
             <div class="netflix-theater-mode">
-                <!-- Demo Video Player -->
-                <div class="netflix-video-player">
-                    <div class="demo-player">
-                        <i class="bi bi-film player-icon"></i>
-                        <div class="player-content">
-                            <h2>{{ movie.title }}</h2>
-                            <p class="player-meta">{{ movie.releaseYear }} | {{ movie.duration }} min</p>
-                        </div>
+                <!-- Local Video Player -->
+                <div *ngIf="isUsingLocalVideo()" class="netflix-video-player">
+                    <vg-player (onPlayerReady)="onPlayerReady($event)">
+                        <vg-overlay-play></vg-overlay-play>
+                        <vg-buffering></vg-buffering>
 
-                        <div class="player-controls-container">
-                            <div class="player-progress">
-                                <div class="progress-bar-container">
-                                    <div class="progress-bar-bg"></div>
-                                    <div class="progress-bar-fill" style="width: 25%;"></div>
-                                    <div class="progress-bar-hover" style="width: 35%;"></div>
-                                </div>
-                                <div class="time-display">00:15 / 01:01</div>
-                            </div>
+                        <vg-controls>
+                            <vg-play-pause></vg-play-pause>
+                            <vg-playback-button [playbackValues]="[ '1.0', '1.5', '2.0', '4.0' ]"></vg-playback-button>
+                            <vg-time-display vgProperty="current" vgFormat="mm:ss"></vg-time-display>
 
-                            <div class="player-controls">
-                                <div class="controls-left">
-                                    <button class="control-button"><i class="bi bi-play-fill"></i></button>
-                                    <button class="control-button"><i class="bi bi-pause-fill"></i></button>
-                                    <button class="control-button"><i class="bi bi-skip-backward-fill"></i></button>
-                                    <button class="control-button"><i class="bi bi-skip-forward-fill"></i></button>
-                                    <div class="volume-control">
-                                        <button class="control-button"><i class="bi bi-volume-up-fill"></i></button>
-                                        <div class="volume-slider-container">
-                                            <div class="volume-slider">
-                                                <div class="volume-fill" style="width: 80%;"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <vg-scrub-bar [vgSlider]="true" vgFor="singleVideo">
+                                <vg-scrub-bar-current-time></vg-scrub-bar-current-time>
+                                <vg-scrub-bar-buffering-time></vg-scrub-bar-buffering-time>
+                            </vg-scrub-bar>
 
-                                <div class="controls-right">
-                                    <button class="control-button"><i class="bi bi-badge-cc-fill"></i></button>
-                                    <button class="control-button"><i class="bi bi-gear-fill"></i></button>
-                                    <button class="control-button"><i class="bi bi-arrows-fullscreen"></i></button>
-                                </div>
-                            </div>
-                        </div>
+                            <vg-time-display vgProperty="left" vgFormat="mm:ss"></vg-time-display>
+                            <vg-time-display vgProperty="total" vgFormat="mm:ss"></vg-time-display>
+
+                            <vg-track-selector></vg-track-selector>
+                            <vg-mute></vg-mute>
+                            <vg-volume></vg-volume>
+
+                            <vg-fullscreen></vg-fullscreen>
+                        </vg-controls>
+
+                        <video [vgMedia]="$any(media)" #media id="singleVideo" preload="auto"
+                            [src]="getFullMediaUrl(movie.videoUploadFile_url)" crossorigin>
+                        </video>
+                    </vg-player>
+                </div>
+
+                <!-- YouTube Player -->
+                <div *ngIf="isUsingYoutubeVideo()" class="youtube-video-player">
+                    <iframe width="100%" height="100%" [src]="youtubeVideoUrl" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <!-- No Video Source Available -->
+                <div *ngIf="!isUsingLocalVideo() && !isUsingYoutubeVideo()" class="no-video-message">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        No video source available for this movie.
                     </div>
                 </div>
             </div>
@@ -88,8 +91,8 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="poster-thumbnail">
-                            <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'"
-                                class="img-fluid rounded shadow">
+                            <img [src]="movie.posterUploadFile_url ? getFullMediaUrl(movie.posterUploadFile_url) : movie.posterUrl"
+                                [alt]="movie.title + ' poster'" class="img-fluid rounded shadow">
                         </div>
                     </div>
                     <div class="col-md-8">
@@ -106,7 +109,7 @@
                                 }}/10</span>
                         </div>
                         <div class="genres-container">
-                            <span *ngFor="let genre of movie.genre" class="genre-pill">{{ genre }}</span>
+                            <span *ngFor="let genre of movie.genres" class="genre-pill">{{ genre.name }}</span>
                         </div>
                         <p class="synopsis">{{ movie.description }}</p>
                         <p class="director"><strong>Director:</strong> {{ movie.director }}</p>
