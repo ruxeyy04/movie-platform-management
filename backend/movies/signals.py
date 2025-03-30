@@ -7,19 +7,21 @@ from django.core.cache import cache
 @receiver(post_delete, sender=Movie)
 def auto_delete_files_on_delete(sender, instance, **kwargs):
     try: 
-        if instance.poster:
-            if os.path.isfile(instance.poster.path):
-                os.remove(instance.poster.path)
+        if instance.posterUploadFile_url:
+            poster_path = instance.posterUploadFile_url.path if instance.posterUploadFile_url else None
+            if poster_path and os.path.isfile(poster_path):
+                os.remove(poster_path)
                 # print(f"Deleted poster file for movie {instance.title} (ID: {instance.id})")
             else:
-                print(f"Poster file for movie {instance.title} not found at {instance.poster.path}")
+                print(f"Poster file for movie {instance.title} not found at {poster_path}")
         
-        if instance.video:
-            if os.path.isfile(instance.video.path):
-                os.remove(instance.video.path)
+        if instance.videoUploadFile_url:
+            video_path = instance.videoUploadFile_url.path if instance.videoUploadFile_url else None
+            if video_path and os.path.isfile(video_path):
+                os.remove(video_path)
                 # print(f"Deleted video file for movie {instance.title} (ID: {instance.id})")
             else:
-                print(f"Video file for movie {instance.title} not found at {instance.video.path}")
+                print(f"Video file for movie {instance.title} not found at {video_path}")
     except Exception as e:
         print(f"Error deleting files for movie {instance.title}: {str(e)}")
 

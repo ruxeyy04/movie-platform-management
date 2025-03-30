@@ -158,61 +158,61 @@ class FileDeleteView(View):
     """
     Handle file deletions for movie posters and videos
     """
-    def post(self, request):
+    def delete(self, request):
         try:
-            import json
-            from urllib.parse import unquote
-            
             try:
                 data = json.loads(request.body.decode('utf-8'))
             except (json.JSONDecodeError, UnicodeDecodeError):
                 data = request.POST
-                
+
             if 'url' not in data:
                 return JsonResponse({'error': 'No URL provided'}, status=400)
-            
+
             file_url = data['url']
             logger.info(f"Deleting file with URL: {file_url}")
-            
-            media_url = settings.MEDIA_URL
-            if media_url.endswith('/'):
-                media_url = media_url[:-1]
+
+            # Check if this is a relative path or full URL
+            if file_url.startswith('http'):
+                media_url = settings.MEDIA_URL.rstrip('/')
                 
-            if media_url not in file_url:
-                return JsonResponse({'error': 'Invalid file URL'}, status=400)
-            
-            url_parts = file_url.split(media_url)
-            if len(url_parts) != 2:
-                return JsonResponse({'error': 'Unable to parse file URL'}, status=400)
-                
-            relative_path = unquote(url_parts[1])
+                if media_url not in file_url:
+                    return JsonResponse({'error': 'Invalid file URL'}, status=400)
+
+                url_parts = file_url.split(media_url)
+                if len(url_parts) != 2:
+                    return JsonResponse({'error': 'Unable to parse file URL'}, status=400)
+
+                relative_path = unquote(url_parts[1])
+            else:
+                # Handle relative path directly
+                relative_path = unquote(file_url)
+
             if relative_path.startswith('/'):
                 relative_path = relative_path[1:]
-            
+
             relative_path = relative_path.replace('\\', '/').replace('//', '/')
-                
+
             file_path = os.path.join(settings.MEDIA_ROOT, *relative_path.split('/'))
-            
+
             logger.info(f"Attempting to delete file at path: {file_path}")
-            
+
             if not os.path.exists(file_path):
                 return JsonResponse({'error': f'File not found at path: {file_path}'}, status=404)
-                
+
             poster_dir_norm = os.path.normpath(POSTER_DIR)
             video_dir_norm = os.path.normpath(VIDEO_DIR)
             file_path_norm = os.path.normpath(file_path)
-            
+
             if not (file_path_norm.startswith(poster_dir_norm) or file_path_norm.startswith(video_dir_norm)):
                 return JsonResponse({'error': 'File is not in an allowed directory'}, status=403)
-            
+
             os.remove(file_path)
-            
+
             return JsonResponse({'success': True, 'message': 'File deleted successfully'})
-            
+
         except Exception as e:
             logger.error(f"Error deleting file: {str(e)}")
             return JsonResponse({'error': str(e)}, status=500)
-
 @csrf_exempt
 @require_http_methods(["POST"])
 def upload_poster(request):
@@ -226,7 +226,7 @@ def upload_video(request):
     return FileUploadView.as_view()(request, file_type='video')
 
 @csrf_exempt
-@require_http_methods(["POST"])
+@require_http_methods(["DELETE"])
 def delete_file(request):
     """Delete an uploaded file"""
     return FileDeleteView.as_view()(request)

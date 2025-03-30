@@ -302,14 +302,27 @@
                                     <div class="form-group">
                                         <label for="videoFile" class="form-label">Upload Video</label>
                                         <div class="file-upload-wrapper">
-                                            <div class="file-upload-input">
+                                            <!-- File input (visible only when no file is uploaded yet) -->
+                                            <div class="file-upload-input" *ngIf="videoUploadProgress.state !== 'DONE'">
                                                 <input type="file" id="videoFile" class="form-control-file"
                                                     accept="video/*" (change)="onVideoFileSelected($event)">
                                                 <div class="file-upload-placeholder" [class.has-file]="videoFile">
                                                     <i class="bi bi-film"></i>
                                                     <span *ngIf="!videoFile">Drop video file here or click to
                                                         browse</span>
-                                                    <span *ngIf="videoFile">{{ videoFileName }}</span>
+                                                    <span *ngIf="videoFile">{{ videoFile.name }}</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Display for uploaded file (in edit mode or after successful upload) -->
+                                            <div *ngIf="videoUploadProgress.state === 'DONE'"
+                                                class="uploaded-file-display">
+                                                <div class="file-preview">
+                                                    <i class="bi bi-film"></i>
+                                                    <div class="file-info">
+                                                        <span class="filename">{{ videoFileName ||
+                                                            videoUploadProgress.filename }}</span>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -337,8 +350,7 @@
                                                             (click)="cancelVideoUpload()">
                                                             <i class="bi bi-x-circle"></i> Cancel
                                                         </button>
-                                                        <button
-                                                            *ngIf="videoUploadProgress.state === 'DONE' || videoUploadProgress.state === 'ERROR'"
+                                                        <button *ngIf="videoUploadProgress.state === 'DONE'"
                                                             type="button" class="btn-remove-file"
                                                             (click)="removeVideoFile()">
                                                             <i class="bi bi-trash"></i> Remove
@@ -368,10 +380,17 @@
 
                             <!-- Poster Preview -->
                             <div class="poster-preview-container mb-4">
-                                <div class="poster-preview" *ngIf="posterPreview">
+                                <!-- Show preview from URL input -->
+                                <div class="poster-preview" *ngIf="usePosterUrl && posterPreview">
                                     <img [src]="posterPreview" alt="Movie poster preview">
                                 </div>
-                                <div class="poster-placeholder" *ngIf="!posterPreview">
+                                <!-- Show preview from file upload -->
+                                <div class="poster-preview" *ngIf="!usePosterUrl && posterFilePreview">
+                                    <img [src]="posterFilePreview" alt="Movie poster preview">
+                                </div>
+                                <!-- Placeholder when no preview available -->
+                                <div class="poster-placeholder"
+                                    *ngIf="(usePosterUrl && !posterPreview) || (!usePosterUrl && !posterFilePreview)">
                                     <i class="bi bi-image"></i>
                                     <p>No poster image</p>
                                 </div>
@@ -420,13 +439,27 @@
                                 <div class="form-group mb-4">
                                     <label for="posterFile" class="form-label">Upload Image</label>
                                     <div class="file-upload-wrapper">
-                                        <div class="file-upload-input">
+                                        <!-- File input (visible only when no file is uploaded yet) -->
+                                        <div class="file-upload-input" *ngIf="posterUploadProgress.state !== 'DONE'">
                                             <input type="file" id="posterFile" class="form-control-file"
                                                 accept="image/*" (change)="onPosterFileSelected($event)">
                                             <div class="file-upload-placeholder" [class.has-file]="posterFile">
                                                 <i class="bi bi-image"></i>
                                                 <span *ngIf="!posterFile">Drop image here or click to browse</span>
                                                 <span *ngIf="posterFile">{{ posterFile.name }}</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Display for uploaded file (in edit mode or after successful upload) -->
+                                        <div *ngIf="posterUploadProgress.state === 'DONE'"
+                                            class="uploaded-file-display">
+                                            <div class="file-preview">
+                                                <img *ngIf="posterFilePreview" [src]="posterFilePreview"
+                                                    alt="Poster preview" class="preview-image">
+                                                <div class="file-info">
+                                                    <span class="filename">{{ posterFileName ||
+                                                        posterUploadProgress.filename }}</span>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -454,10 +487,8 @@
                                                         (click)="cancelPosterUpload()">
                                                         <i class="bi bi-x-circle"></i> Cancel
                                                     </button>
-                                                    <button
-                                                        *ngIf="posterUploadProgress.state === 'DONE' || posterUploadProgress.state === 'ERROR'"
-                                                        type="button" class="btn-remove-file"
-                                                        (click)="removePosterFile()">
+                                                    <button *ngIf="posterUploadProgress.state === 'DONE'" type="button"
+                                                        class="btn-remove-file" (click)="removePosterFile()">
                                                         <i class="bi bi-trash"></i> Remove
                                                     </button>
                                                 </div>

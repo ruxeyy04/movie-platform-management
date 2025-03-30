@@ -98,7 +98,11 @@
   left: 0;
   width: 100%;
   height: 4px;
-  background: linear-gradient(to right, var(--primary-color), rgba(229, 9, 20, 0.5));
+  background: linear-gradient(
+    to right,
+    var(--primary-color),
+    rgba(229, 9, 20, 0.5)
+  );
 }
 
 .section-title {
@@ -359,7 +363,11 @@ textarea.form-control {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, rgba(229, 9, 20, 0.7) 0%, rgba(229, 9, 20, 0) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(229, 9, 20, 0.7) 0%,
+    rgba(229, 9, 20, 0) 100%
+  );
   border-radius: 0 0 8px 8px;
 }
 
@@ -490,7 +498,11 @@ textarea.form-control {
   left: 0;
   width: 0;
   height: 100%;
-  background: linear-gradient(90deg, rgba(229, 9, 20, 0.1) 0%, rgba(229, 9, 20, 0) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(229, 9, 20, 0.1) 0%,
+    rgba(229, 9, 20, 0) 100%
+  );
   transition: width 0.3s ease;
 }
 
@@ -611,7 +623,12 @@ textarea.form-control {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
   transform: translateX(-100%);
   transition: transform 0.5s ease;
 }
@@ -762,7 +779,9 @@ input[matDatepicker] {
   border-color: var(--primary-color) !important;
 }
 
-::ng-deep .mat-calendar-body-disabled > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+::ng-deep
+  .mat-calendar-body-disabled
+  > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
   color: rgba(255, 255, 255, 0.3) !important;
 }
 
@@ -770,7 +789,7 @@ input[matDatepicker] {
   border-top-color: var(--text-light) !important;
 }
 
-::ng-deep .mat-calendar-next-button, 
+::ng-deep .mat-calendar-next-button,
 ::ng-deep .mat-calendar-previous-button {
   color: var(--text-light) !important;
 }
@@ -903,7 +922,7 @@ input[matDatepicker] {
   margin-bottom: 10px;
 }
 
-.file-upload-placeholder:hover, 
+.file-upload-placeholder:hover,
 .file-upload-input input[type="file"]:hover + .file-upload-placeholder {
   border-color: var(--primary-color);
   background-color: rgba(30, 30, 30, 0.7);
@@ -946,7 +965,8 @@ input[matDatepicker] {
   gap: 8px;
 }
 
-.btn-cancel-upload, .btn-remove-file {
+.btn-cancel-upload,
+.btn-remove-file {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.7);
@@ -995,4 +1015,41 @@ input[matDatepicker] {
 
 ::ng-deep .mat-mdc-progress-bar.mat-primary .mdc-linear-progress__bar-inner {
   border-color: #3498db !important;
+}
+
+.uploaded-file-display {
+  border: 2px dashed #3e3e3e;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 10px;
+  background-color: #1a1a1a;
+}
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.file-preview .preview-image {
+  max-width: 100px;
+  max-height: 80px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.file-preview i {
+  font-size: 32px;
+  color: #e50914;
+}
+
+.file-info {
+  flex: 1;
+}
+
+.filename {
+  display: block;
+  color: #fff;
+  font-size: 14px;
+  word-break: break-all;
 }

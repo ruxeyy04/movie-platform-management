@@ -39,7 +39,25 @@ class MovieSerializer(serializers.ModelSerializer):
             movie.genres.add(genre_obj)
 
         return movie
-
+    def update(self, instance, validated_data):
+        # Handle genre data
+        genre_names = validated_data.pop('genre', None)
+        
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        
+        # Update genres if provided
+        if genre_names is not None:
+            # Clear existing genres and add new ones
+            instance.genres.clear()
+            for name in genre_names:
+                genre_obj, _ = Genre.objects.get_or_create(name=name)
+                instance.genres.add(genre_obj)
+        
+        return instance
     class Meta:
         model = Movie
         fields = [

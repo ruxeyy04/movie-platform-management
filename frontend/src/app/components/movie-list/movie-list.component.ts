@@ -50,14 +50,12 @@ export class MovieListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadMovies(1);
 
-    // Subscribe to loading states
     this.subscriptions.push(
       this.movieService.listLoading$.subscribe(status => this.loading = status)
     );
   }
 
   ngOnDestroy(): void {
-    // Clean up subscription when component is destroyed
     if (this.rotationInterval) {
       this.rotationInterval.unsubscribe();
     }
@@ -76,7 +74,6 @@ export class MovieListComponent implements OnInit, OnDestroy {
           this.previousPage = response.previous;
           this.currentPage = page;
 
-          // Setup featured movies
           this.setupFeaturedMovies();
         },
         error: (err) => {
@@ -107,6 +104,13 @@ export class MovieListComponent implements OnInit, OnDestroy {
 
       // Start the rotation
       this.startBannerRotation();
+    } else {
+      // Clear featured movies and stop rotation when no movies exist
+      this.featuredMovies = [];
+      if (this.rotationInterval) {
+        this.rotationInterval.unsubscribe();
+        this.rotationInterval = null;
+      }
     }
   }
 
@@ -209,10 +213,8 @@ export class MovieListComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Add Math to the component class
   Math = Math;
 
-  // Toggle movie actions visibility when clicking expand button
   toggleMovieActions(movie: any): void {
     console.log('Toggle actions for movie:', movie.id);
     const currentValue = this.expandedMovies.get(movie.id) || false;

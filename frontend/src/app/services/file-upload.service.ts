@@ -174,16 +174,14 @@ export class FileUploadService {
         }
         this.cancelSubjects.delete(uploadId);
     }
-
     deleteFile(fileUrl: string, showNotification: boolean = true): Observable<any> {
-        return from(axios.post(`${this.apiUrl}delete/`,
-            { url: fileUrl },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Basic ' + btoa(environment.AUTH_USERNAME + ':' + environment.AUTH_PASSWORD)
-                }
-            }))
+        return from(axios.delete(`${this.apiUrl}delete/`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(environment.AUTH_USERNAME + ':' + environment.AUTH_PASSWORD)
+            },
+            data: { url: fileUrl }
+        }))
             .pipe(
                 map(response => {
                     return { ...response.data, showNotification };
@@ -191,6 +189,7 @@ export class FileUploadService {
                 catchError(this.handleError)
             );
     }
+
 
     private getEventMessage(event: HttpEvent<any>, file: File): any {
         switch (event.type) {
@@ -224,11 +223,7 @@ export class FileUploadService {
         return throwError(() => new Error(errorMessage));
     }
 
-    /**
-     * Extracts the file path from a URL
-     * @param url The full URL to the file
-     * @returns The relative path like "movie_posters/filename.png"
-     */
+
     extractFilePath(url: string): string {
         if (!url) return '';
 

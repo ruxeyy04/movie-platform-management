@@ -17,7 +17,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
 
-// Custom date formats to match Netflix style
 export const NETFLIX_DATE_FORMATS = {
   parse: {
     dateInput: 'MM/DD/YYYY',
@@ -100,6 +99,9 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     else return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
   }
 
+  // Track filenames returned from server
+  posterFileName: string | null = null;
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -139,7 +141,7 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       releaseYear: ['', [Validators.required, Validators.min(1888), Validators.max(this.getCurrentYear() + 5)]],
-      releaseDate: [null, [Validators.required]], // Date field
+      releaseDate: [null],
       director: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       genre: this.fb.array([], [Validators.required, Validators.minLength(1)]),
       duration: ['', [Validators.required, Validators.min(1), Validators.max(600)]],
@@ -153,6 +155,9 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     // Set validators based on URL/file choice
     this.updatePosterValidators();
     this.updateVideoValidators();
+
+    // Set release date validators based on coming soon status
+    this.updateReleaseDateValidators();
 
     // Update poster preview when URL changes
     this.movieForm.get('posterUrl')?.valueChanges.subscribe(url => {
@@ -171,9 +176,6 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       posterUrlControl?.setValidators([Validators.required, Validators.pattern(/^https?:\/\/.+/)]);
     } else {
       posterUrlControl?.clearValidators();
-      if (this.uploadedPosterUrl) {
-        posterUrlControl?.setValue(this.uploadedPosterUrl);
-      }
     }
 
     posterUrlControl?.updateValueAndValidity();
@@ -186,12 +188,23 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       videoUrlControl?.setValidators([Validators.required, Validators.pattern(/^https?:\/\/.+/)]);
     } else {
       videoUrlControl?.clearValidators();
-      if (this.uploadedVideoUrl) {
-        videoUrlControl?.setValue(this.uploadedVideoUrl);
-      }
     }
 
     videoUrlControl?.updateValueAndValidity();
+  }
+
+  updateReleaseDateValidators(): void {
+    const releaseDateControl = this.movieForm.get('releaseDate');
+
+    if (this.isComingSoon) {
+      // If "Coming Soon" is checked, clear validators
+      releaseDateControl?.clearValidators();
+    } else {
+      // If not coming soon, release date is required
+      releaseDateControl?.setValidators([Validators.required]);
+    }
+
+    releaseDateControl?.updateValueAndValidity();
   }
 
   onPosterInputTypeChange(useUrl: boolean): void {
@@ -201,28 +214,42 @@ export class MovieFormComponent implements OnInit, OnDestroy {
 
     // Clear opposite input
     if (useUrl) {
-      this.posterFile = null;
-      this.posterFilePreview = null;
+      // Switching to URL input
+      // Don't clear file preview if we've uploaded something
+      if (this.posterUploadProgress.state !== 'DONE') {
+        this.posterFile = null;
+        this.posterFilePreview = null;
+      }
       this.cancelPosterUpload();
     } else {
+      // Switching to File Upload input
       if (!this.uploadedPosterUrl) {
         this.movieForm.get('posterUrl')?.setValue('');
       }
-      this.posterPreview = null;
+
+      // Don't clear the poster preview if we're switching back to Upload
+      // and we already have an uploaded file
+      if (this.posterUploadProgress.state !== 'DONE') {
+        this.posterPreview = null;
+      }
     }
   }
 
   onVideoInputTypeChange(useUrl: boolean): void {
     this.useVideoUrl = useUrl;
     this.updateVideoValidators();
-    this.videoSizeError = false; // Reset error state when switching input types
+    this.videoSizeError = false;
 
     // Clear opposite input
     if (useUrl) {
-      this.videoFile = null;
-      this.videoFileName = null;
+      // Switching to URL input
+      if (this.videoUploadProgress.state !== 'DONE') {
+        this.videoFile = null;
+        this.videoFileName = null;
+      }
       this.cancelVideoUpload();
     } else {
+      // Switching to File Upload input
       if (!this.uploadedVideoUrl) {
         this.movieForm.get('videoUrl')?.setValue('');
       }
@@ -233,26 +260,23 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     const fileInput = event.target as HTMLInputElement;
     if (fileInput.files && fileInput.files.length > 0) {
       const file = fileInput.files[0];
-      this.posterSizeError = false; // Reset error state
+      this.posterSizeError = false;
 
-      // Check if file is an image
       if (!file.type.startsWith('image/')) {
         this.notificationService.error('Please select an image file for the poster');
         return;
       }
 
-      // Check file size
       if (file.size > this.MAX_POSTER_SIZE) {
-        this.posterSizeError = true; // Set error state
+        this.posterSizeError = true;
         this.notificationService.error(`File size exceeds the limit of ${this.formatFileSize(this.MAX_POSTER_SIZE)}. Your file is ${this.formatFileSize(file.size)}.`);
-        // Reset the file input
+
         fileInput.value = '';
         return;
       }
 
       this.posterFile = file;
 
-      // Create preview
       const reader = new FileReader();
       reader.onload = () => {
         this.posterFilePreview = this.sanitizer.bypassSecurityTrustUrl(reader.result as string);
@@ -260,7 +284,6 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       };
       reader.readAsDataURL(file);
 
-      // Start uploading
       this.uploadPosterFile(file);
     }
   }
@@ -269,7 +292,7 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     const fileInput = event.target as HTMLInputElement;
     if (fileInput.files && fileInput.files.length > 0) {
       const file = fileInput.files[0];
-      this.videoSizeError = false; // Reset error state
+      this.videoSizeError = false;
 
       // Check if file is a video
       if (!file.type.startsWith('video/')) {
@@ -358,19 +381,38 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     if (this.uploadedPosterUrl) {
       this.uploadService.deleteFile(this.uploadedPosterUrl).subscribe({
         next: (response) => {
-          // this.notificationService.success('Poster file deleted from server');
+          this.notificationService.success('Poster removed successfully');
         },
         error: (error) => {
           this.notificationService.error('Failed to delete poster from server: ' + error.message);
+        },
+        complete: () => {
+          // Reset all poster-related states
+          this.resetPosterState();
         }
       });
+    } else {
+      this.resetPosterState();
+      this.notificationService.success('Poster removed');
     }
+  }
+
+  resetPosterState(): void {
+    // Clear form values
     this.movieForm.get('posterUrl')?.setValue('');
+    this.movieForm.get('posterUploadFile_url')?.setValue('');
+
+    // Reset all state variables
     this.posterFile = null;
     this.posterFilePreview = null;
     this.posterPreview = null;
+    this.posterFileName = null;
     this.cancelPosterUpload();
     this.uploadedPosterUrl = null;
+
+    // Reset upload progress
+    this.posterUploadProgress = { state: 'PENDING', progress: 0 };
+
     // Reset file input
     const fileInput = document.getElementById('posterFile') as HTMLInputElement;
     if (fileInput) fileInput.value = '';
@@ -381,18 +423,40 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       // Delete the file from server
       this.uploadService.deleteFile(this.uploadedVideoUrl).subscribe({
         next: (response) => {
-          // this.notificationService.success('Video file deleted from server');
+          this.notificationService.success('Video removed successfully');
+          this.movieForm.get('videoUploadFile_url')?.setValue('');
+          this.movieForm.get('videoUrl')?.setValue('');
+
         },
         error: (error) => {
           this.notificationService.error('Failed to delete video from server: ' + error.message);
+          this.movieForm.get('videoUploadFile_url')?.setValue('');
+          this.movieForm.get('videoUrl')?.setValue('');
+        },
+        complete: () => {
+          // Reset all video-related states
+          this.resetVideoState();
         }
       });
+    } else {
+      this.resetVideoState();
+      this.notificationService.success('Video removed');
     }
+  }
+
+  resetVideoState(): void {
+    // Clear form values
     this.movieForm.get('videoUrl')?.setValue('');
+    this.movieForm.get('videoUploadFile_url')?.setValue('');
+
+    // Reset all state variables
     this.videoFile = null;
     this.videoFileName = null;
     this.cancelVideoUpload();
     this.uploadedVideoUrl = null;
+
+    // Reset upload progress
+    this.videoUploadProgress = { state: 'PENDING', progress: 0 };
 
     // Reset file input
     const fileInput = document.getElementById('videoFile') as HTMLInputElement;
@@ -415,17 +479,47 @@ export class MovieFormComponent implements OnInit, OnDestroy {
   }
 
   updateForm(movie: Movie): void {
+    this.isComingSoon = !movie.releaseDate;
+
     // Set poster & video URLs
-    if (movie.posterUrl) {
+    if (movie.posterUploadFile_url) {
+      this.usePosterUrl = false;
+      this.uploadedPosterUrl = movie.posterUrl;
+
+      // Extract filename from path
+      const posterPath = movie.posterUploadFile_url || '';
+      this.posterFileName = posterPath.split('/').pop() || 'Uploaded poster';
+
+      this.posterFilePreview = this.sanitizer.bypassSecurityTrustUrl(movie.posterUrl);
+      this.posterPreview = movie.posterUrl;
+
+      this.posterUploadProgress = {
+        state: 'DONE',
+        progress: 100,
+        uploadedUrl: movie.posterUrl,
+        filename: this.posterFileName
+      };
+    } else if (movie.posterUrl) {
       this.usePosterUrl = true;
       this.posterPreview = movie.posterUrl;
     }
 
-    if (movie.videoUrl) {
+    if (movie.videoUploadFile_url) {
+      this.useVideoUrl = false;
+      this.uploadedVideoUrl = movie.videoUrl;
+
+      const videoPath = movie.videoUploadFile_url || '';
+      this.videoFileName = videoPath.split('/').pop() || 'Uploaded video';
+
+      this.videoUploadProgress = {
+        state: 'DONE',
+        progress: 100,
+        uploadedUrl: movie.videoUrl,
+        filename: this.videoFileName
+      };
+    } else if (movie.videoUrl) {
       this.useVideoUrl = true;
     }
-
-    this.isComingSoon = !movie.releaseDate;
 
     this.movieForm.patchValue({
       title: movie.title,
@@ -435,13 +529,14 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       releaseDate: movie.releaseDate ? new Date(movie.releaseDate) : null,
       duration: movie.duration,
       rating: movie.rating,
-      posterUrl: movie.posterUrl,
-      videoUrl: movie.videoUrl,
-      posterUploadFile_url: movie.posterUploadFile_url,
-      videoUploadFile_url: movie.videoUploadFile_url
+      posterUrl: this.usePosterUrl ? movie.posterUrl : '',
+      videoUrl: this.useVideoUrl ? movie.videoUrl : '',
+      posterUploadFile_url: '',
+      videoUploadFile_url: ''
     });
 
-    // Clear and set genres
+    this.updateReleaseDateValidators();
+
     const genreArray = this.movieForm.get('genre') as FormArray;
     genreArray.clear();
 
@@ -449,9 +544,12 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       movie.genre.forEach(genre => {
         genreArray.push(this.fb.control(genre));
       });
+    } else if (movie.genres && Array.isArray(movie.genres)) {
+      movie.genres.forEach(genreObj => {
+        genreArray.push(this.fb.control(genreObj.name));
+      });
     }
 
-    // Update validators based on URL/file choice
     this.updatePosterValidators();
     this.updateVideoValidators();
   }
@@ -472,7 +570,6 @@ export class MovieFormComponent implements OnInit, OnDestroy {
 
   isValidUrl(url: string): boolean {
     try {
-      // Basic URL validation
       const validUrl = new URL(url);
       return validUrl.protocol === 'http:' || validUrl.protocol === 'https:';
     } catch {
@@ -486,10 +583,14 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.submitted = true;
+    if ((this.usePosterUrl && (!this.movieForm.get('posterUrl')?.value || this.movieForm.get('posterUrl')?.value.trim() === '')) ||
+      (!this.usePosterUrl && !this.uploadedPosterUrl)) {
+      this.notificationService.info('A movie poster is required. Please provide a poster image by URL or upload.');
+      return;
+    }
 
+    this.submitted = true;
     if (this.movieForm.invalid) {
-      // Mark all fields as touched to trigger validation messages
       Object.keys(this.movieForm.controls).forEach(key => {
         const control = this.movieForm.get(key);
         control?.markAsTouched();
@@ -503,18 +604,26 @@ export class MovieFormComponent implements OnInit, OnDestroy {
   }
 
   prepareMovieData(): Movie {
-    // Get form values
     const formModel = this.movieForm.value;
 
-    // Transform data if needed
     let releaseDate = null;
     if (!this.isComingSoon && formModel.releaseDate) {
-      // Format date to ISO string
       releaseDate = new Date(formModel.releaseDate).toISOString().split('T')[0];
     }
+    let posterUploadPath: string | null = null;
+    let videoUploadPath: string | null = null;
 
-    // Create the movie object
-    const movie: Movie = {
+    if (this.uploadedPosterUrl) {
+      const match = this.uploadedPosterUrl.match(/\/media\/(.+)/);
+      posterUploadPath = match ? match[1] : this.uploadedPosterUrl;
+    }
+
+    if (this.uploadedVideoUrl) {
+      const match = this.uploadedVideoUrl.match(/\/media\/(.+)/);
+      videoUploadPath = match ? match[1] : this.uploadedVideoUrl;
+    }
+
+    const movie: Partial<Movie> = {
       title: formModel.title,
       description: formModel.description,
       director: formModel.director,
@@ -523,25 +632,38 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       duration: formModel.duration,
       rating: formModel.rating,
       genre: formModel.genre,
-      posterUrl: formModel.posterUrl,
-      videoUrl: formModel.videoUrl,
-      posterUploadFile_url: this.uploadedPosterUrl || null,
-      videoUploadFile_url: this.uploadedVideoUrl || null
     };
 
-    // Add ID if in edit mode
+    if (this.usePosterUrl) {
+      movie.posterUrl = formModel.posterUrl;
+      movie.posterUploadFile_url = null;
+    } else {
+      movie.posterUrl = '';
+
+      movie.posterUploadFile_url = posterUploadPath;
+    }
+
+    if (this.useVideoUrl) {
+      movie.videoUrl = formModel.videoUrl;
+      movie.videoUploadFile_url = null;
+    } else {
+      movie.videoUrl = '';
+
+      movie.videoUploadFile_url = videoUploadPath;
+    }
+
     if (this.isEditMode && this.movieId) {
       movie.id = this.movieId;
     }
 
-    return movie;
+    return movie as Movie;
   }
 
   submitMovie(movie: Movie): void {
     this.submitting = true;
 
     if (this.isEditMode && this.movieId) {
-      // Update existing movie
+      console.log("edit movide data", movie)
       this.movieService.updateMovie(this.movieId, movie).subscribe({
         next: () => {
           this.notificationService.success('Movie updated successfully');
@@ -554,7 +676,8 @@ export class MovieFormComponent implements OnInit, OnDestroy {
         }
       });
     } else {
-      // Create new movie
+
+      console.log("add movide data", movie)
       this.movieService.addMovie(movie).subscribe({
         next: () => {
           this.notificationService.success('Movie created successfully');
@@ -585,19 +708,7 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     const checkbox = event.target as HTMLInputElement;
     this.isComingSoon = checkbox.checked;
 
-    const releaseDateControl = this.movieForm.get('releaseDate');
-
-    if (this.isComingSoon) {
-      // If "Coming Soon" is checked, clear and disable releaseDate
-      releaseDateControl?.setValue(null);
-      releaseDateControl?.clearValidators();
-    } else {
-      // If "Coming Soon" is unchecked, add required validator
-      releaseDateControl?.setValidators([Validators.required]);
-    }
-
-    // Update the control
-    releaseDateControl?.updateValueAndValidity();
+    this.updateReleaseDateValidators();
   }
 
   getRatingDescription(rating: number): string {
