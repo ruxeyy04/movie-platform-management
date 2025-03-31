@@ -166,6 +166,3 @@ The application will be available at `http://localhost:4200/`.
 - Check browser console for any frontend errors.
 - If you encounter issues with Angular CLI, try updating it using `npm update -g @angular/cli`
 
-## License
-
-[Include license information here]
