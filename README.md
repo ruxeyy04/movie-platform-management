@@ -1,6 +1,6 @@
-# Movie CRUD Application
+# MOVIEFLIX
 
-A full-stack application for managing and streaming movies with a Netflix-style interface. The application allows users to browse, search, view details, and play movies with a custom video player supporting YouTube videos and local media.
+A full-stack web application for managing and streaming movies with a Netflix-style interface. The application allows users to browse, search, view details, and play movies with a custom video player supporting YouTube videos and local media.
 
 ## Features
 
@@ -181,6 +181,3 @@ The application will be available at `http://localhost:4200/`.
 - Check browser console for any frontend errors.
 - If you encounter issues with Angular CLI, try updating it using `npm update -g @angular/cli`
 
-## License
-
-[Include license information here]
