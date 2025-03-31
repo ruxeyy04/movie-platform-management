@@ -14,13 +14,124 @@ A full-stack web application for managing and streaming movies with a Netflix-st
 
 ## Prerequisites
 
-- Node.js (v23+) and npm
-- Python (v3.13+)
-- Docker (for Redis)
-- Git
+- Node.js (v23+) and npm - [Download Node.js](https://nodejs.org/en)
+- Python (v3.13+) - [Download Python](https://www.python.org/downloads/)
+- Docker (for Redis) [Download Docker](https://www.docker.com/products/docker-desktop)
+- Git - [Download Git](https://git-scm.com/downloads)
 - Angular CLI
 
+## Project Structure
+
+The project is organized into two main directories:
+
+```
+movie-platform-management/
+│
+├── backend/               # Django backend application
+│   ├── backend/           # Backend Settings
+│   ├── movies/            # Movie models and business logic
+│   ├── media/             # Uploaded media files (videos, images)
+│   └── manage.py          # Django management script
+│
+└── frontend/              # Angular frontend application
+    ├── src/               # Source code
+    │   ├── app/           # Angular components
+    │   │   ├── components/# UI components
+    │   │   ├── services/  # API services
+    │   │   └── models/    # Data models
+    │   │   └── shared/    # Shared components
+    │   └── environments/  # Environment configurations
+    └── package.json       # NPM dependencies
+```
+
+### Navigating Between Directories
+
+When working on the project, you'll need to switch between backend and frontend directories. Here are some tips:
+
+1. From the project root, navigate to backend:
+
+```bash
+cd backend
+```
+
+2. From the project root, navigate to frontend:
+
+```bash
+cd frontend
+```
+
+3. From backend to frontend:
+
+```bash
+cd ../frontend
+```
+
+4. From frontend to backend:
+
+```bash
+cd ../backend
+```
+
+5. Return to project root from either directory:
+
+```bash
+cd ..
+```
+
+Always make sure you're in the correct directory when running commands specific to either the backend or frontend.
+
 ## Installation
+
+### Installing Git
+
+1. Download Git from the official website:
+   [https://git-scm.com/downloads](https://git-scm.com/downloads)
+
+2. Follow the installation instructions for your operating system:
+
+   - **Windows**: Run the installer and follow the prompts
+   - **macOS**: Use the macOS installer or install via Homebrew: `brew install git`
+   - **Linux**: Use your distribution's package manager (e.g., `apt install git` for Ubuntu)
+
+3. Verify Git installation:
+
+```bash
+git --version
+```
+
+### Installing Python
+
+1. Download Python from the official website:
+   [https://www.python.org/downloads/](https://www.python.org/downloads/)
+
+2. Follow the installation instructions for your operating system:
+
+   - **Windows**: Run the installer, check "Add Python to PATH", and click "Install Now"
+   - **macOS**: Run the installer package and follow the prompts
+   - **Linux**: Most distributions come with Python pre-installed, otherwise use your package manager
+
+3. Verify Python installation:
+
+```bash
+python --version
+```
+
+### Installing Node.js and npm
+
+1. Download Node.js from the official website:
+   [https://nodejs.org/en](https://nodejs.org/en)
+
+2. Follow the installation instructions for your operating system:
+
+   - **Windows/macOS**: Run the installer and follow the prompts
+   - **Linux**: Use your distribution's package manager or NVM (Node Version Manager)
+
+3. Verify Node.js and npm installation:
+
+```bash
+node --version
+npm --version
+```
 
 ### Installing Docker
 
@@ -180,4 +291,3 @@ The application will be available at `http://localhost:4200/`.
 - If Redis connection fails, ensure the Docker container is running.
 - Check browser console for any frontend errors.
 - If you encounter issues with Angular CLI, try updating it using `npm update -g @angular/cli`
-
