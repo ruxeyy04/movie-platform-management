@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Movie } from '../../models/movie.model';
 import { MovieService } from '../../services/movie.service';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
 import { NotificationService } from '../../services/notification.service';
 import { interval, Subscription } from 'rxjs';
@@ -22,6 +22,7 @@ export class MovieListComponent implements OnInit, OnDestroy {
   movies: Movie[] = [];
   loading = true;
   error = false;
+  initialLoad = true;
   showDeleteModal = false;
   movieToDelete: Movie | null = null;
   deleteInProgress = false;
@@ -51,21 +52,45 @@ export class MovieListComponent implements OnInit, OnDestroy {
   isFiltering: boolean = false;
   animationDuration: number = 400; // milliseconds
 
+  // Search state
+  searchQuery: string = '';
+  isSearching: boolean = false;
+
   // Track subscriptions
   private subscriptions: Subscription[] = [];
 
   constructor(
     private movieService: MovieService,
     private notificationService: NotificationService,
-    private genreService: GenreService
+    private genreService: GenreService,
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
-    this.loadMovies(1);
+    // Subscribe to query parameters
+    this.subscriptions.push(
+      this.route.queryParams.subscribe(params => {
+        const search = params['search'];
+        if (search) {
+          this.searchQuery = search;
+          this.isSearching = true;
+          this.loadSearchResults(search);
+        } else {
+          this.isSearching = false;
+          this.loadMovies(1);
+        }
+      })
+    );
+
     this.loadGenres();
 
     this.subscriptions.push(
       this.movieService.listLoading$.subscribe(status => this.loading = status)
+    );
+
+    this.subscriptions.push(
+      this.movieService.searchLoading$.subscribe(status => this.loading = status)
     );
   }
 
@@ -107,7 +132,7 @@ export class MovieListComponent implements OnInit, OnDestroy {
           this.nextPage = response.next;
           this.previousPage = response.previous;
           this.currentPage = page;
-
+          this.initialLoad = false;
           this.setupFeaturedMovies();
         },
         error: (err) => {
@@ -315,5 +340,33 @@ export class MovieListComponent implements OnInit, OnDestroy {
     const currentValue = this.expandedMovies.get(movie.id) || false;
     this.expandedMovies.set(movie.id, !currentValue);
     console.log('Expanded state is now:', this.expandedMovies.get(movie.id));
+  }
+
+  loadSearchResults(query: string, page: number = 1): void {
+    this.loading = true;
+    this.error = false;
+
+    this.movieService.searchMovies(query, page)
+      .subscribe({
+        next: (response: PaginatedResponse<Movie>) => {
+          this.movies = response.results;
+          this.allMovies = [...response.results];
+          this.filteredMovies = [...response.results];
+          this.totalItems = response.count;
+          this.nextPage = response.next;
+          this.previousPage = response.previous;
+          this.currentPage = page;
+
+          this.setupFeaturedMovies();
+          this.loading = false;
+          this.initialLoad = false;
+        },
+        error: (err) => {
+          console.error('Error fetching search results', err);
+          this.error = true;
+          this.loading = false;
+          this.notificationService.error('Failed to search movies. Please try again.');
+        }
+      });
   }
 }

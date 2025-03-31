@@ -40,14 +40,15 @@
         <!-- Page Title and Add Button -->
         <div *ngIf="!loading && !error && movies.length > 0"
             class="d-flex justify-content-between align-items-center mb-4 mt-4">
-            <h2 class="section-title">All Movies</h2>
+            <h2 class="section-title" *ngIf="!isSearching">All Movies</h2>
+            <h2 class="section-title" *ngIf="isSearching">Search Results for "{{ searchQuery }}"</h2>
             <a routerLink="/movies/new" class="btn btn-netflix-add">
                 <i class="bi bi-plus-lg me-1"></i>Add New Movie
             </a>
         </div>
 
         <!-- Genre Filter -->
-        <div *ngIf="!loading && !error && allMovies.length > 0" class="filter-container mb-4">
+        <div *ngIf="!loading && !error && allMovies.length > 0 && !isSearching" class="filter-container mb-4">
             <div class="filter-row">
                 <div class="filter-group">
                     <label for="genreFilter" class="filter-label">Filter by Genre</label>
@@ -75,7 +76,7 @@
         </div>
 
         <!-- Loading State -->
-        <div *ngIf="loading" class="netflix-loader">
+        <div *ngIf="loading || initialLoad" class="netflix-loader">
             <div class="spinner">
                 <div class="bounce1"></div>
                 <div class="bounce2"></div>
@@ -91,14 +92,18 @@
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="!loading && !error && movies.length === 0" class="empty-state">
+        <div *ngIf="!loading && !error && movies.length === 0 && !initialLoad" class="empty-state">
             <i class="bi bi-film"></i>
             <h3 *ngIf="selectedGenre">No movies found for "{{selectedGenre}}" genre</h3>
-            <h3 *ngIf="!selectedGenre">No movies available</h3>
+            <h3 *ngIf="isSearching">No results found for "{{searchQuery}}"</h3>
+            <h3 *ngIf="!selectedGenre && !isSearching">No movies available</h3>
             <p *ngIf="selectedGenre">Try selecting a different genre or <button class="btn-clear-filter-text"
                     (click)="clearGenreFilter()">clear the filter</button></p>
-            <p *ngIf="!selectedGenre">Add your first movie to get started!</p>
-            <a *ngIf="!selectedGenre" routerLink="/movies/new" class="btn btn-netflix-add mt-3">Add Movie</a>
+            <p *ngIf="isSearching">Try searching with different keywords</p>
+            <p *ngIf="!selectedGenre && !isSearching">Add your first movie to get started!</p>
+            <a *ngIf="!selectedGenre && !isSearching" routerLink="/movies/new" class="btn btn-netflix-add mt-3">Add
+                Movie</a>
+            <a *ngIf="isSearching" routerLink="/movies" class="btn btn-netflix-add mt-3">View All Movies</a>
         </div>
 
         <!-- Movies Grid -->
