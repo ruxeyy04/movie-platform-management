@@ -52,6 +52,13 @@
                             Your browser does not support HTML5 video.
                         </video>
 
+                        <!-- Subtitle display -->
+                        <div *ngIf="subtitleVisible && currentSubtitleText" class="subtitle-container">
+                            <div class="subtitle-text" [ngStyle]="getSubtitleStyle()">
+                                {{ currentSubtitleText }}
+                            </div>
+                        </div>
+
                         <!-- Buffering indicator -->
                         <div *ngIf="isBuffering" class="buffering-indicator">
                             <div class="buffering-spinner">
@@ -118,6 +125,134 @@
                                 </div>
 
                                 <div class="right-controls">
+                                    <!-- Subtitle Controls -->
+                                    <div class="subtitle-selector">
+                                        <button class="control-button" (click)="toggleSubtitleOptions()"
+                                            title="Subtitle Options"
+                                            [class.subtitle-active]="subtitleLoaded && subtitleVisible">
+                                            <i class="bi bi-badge-cc"></i>
+                                            <span *ngIf="subtitleLoaded" class="subtitle-indicator"></span>
+                                        </button>
+                                        <div class="subtitle-options" *ngIf="subtitleOptionsVisible">
+                                            <div class="subtitle-title">Subtitle Options</div>
+
+                                            <!-- Upload subtitle file -->
+                                            <div class="subtitle-upload">
+                                                <label for="subtitleFile" class="subtitle-upload-label">Upload .srt
+                                                    File</label>
+                                                <input type="file" id="subtitleFile" accept=".srt"
+                                                    class="subtitle-file-input"
+                                                    (change)="onSubtitleFileSelected($event)">
+                                                <div *ngIf="subtitleLoaded" class="subtitle-file-info">
+                                                    <i class="bi bi-check-circle-fill"></i> {{ subtitleFileName }}
+                                                </div>
+                                            </div>
+
+                                            <!-- Subtitle testing only options -->
+                                            <!-- <div class="subtitle-testing">
+                                                <button class="subtitle-test-btn" (click)="createExampleSubtitle()">
+                                                    <i class="bi bi-journal-code"></i> Generate Test Subtitles
+                                                </button>
+                                                <button class="subtitle-test-btn" (click)="testSubtitleDisplay()">
+                                                    <i class="bi bi-check2-circle"></i> Display Test Subtitle
+                                                </button>
+                                                <div class="subtitle-direct-toggle">
+                                                    <button class="subtitle-toggle-btn on"
+                                                        (click)="forceSubtitleVisibility(true)"
+                                                        [disabled]="!subtitleLoaded">
+                                                        <i class="bi bi-eye"></i> Show Subtitles
+                                                    </button>
+                                                    <button class="subtitle-toggle-btn off"
+                                                        (click)="forceSubtitleVisibility(false)"
+                                                        [disabled]="!subtitleLoaded">
+                                                        <i class="bi bi-eye-slash"></i> Hide Subtitles
+                                                    </button>
+                                                </div>
+                                            </div> -->
+
+                                            <!-- Toggle subtitle visibility -->
+                                            <div class="subtitle-option" [class.disabled]="!subtitleLoaded">
+                                                <label>Show Subtitles</label>
+                                                <div class="toggle-switch"
+                                                    (click)="subtitleLoaded && toggleSubtitleVisibility()">
+                                                    <input type="checkbox" [checked]="subtitleVisible && subtitleLoaded"
+                                                        [disabled]="!subtitleLoaded">
+                                                    <span class="toggle-slider"></span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Subtitle status message -->
+                                            <div *ngIf="!subtitleLoaded" class="subtitle-status-message">
+                                                No subtitle file loaded. Please upload an .srt file.
+                                            </div>
+
+                                            <div *ngIf="subtitleLoaded" class="subtitle-settings">
+                                                <!-- Font selection -->
+                                                <div class="subtitle-option">
+                                                    <label>Font</label>
+                                                    <select (change)="handleSubtitleFontChange($event)">
+                                                        <option *ngFor="let font of subtitleFontOptions"
+                                                            [value]="font.value"
+                                                            [selected]="font.value === currentSubtitleFont">
+                                                            {{ font.label }}
+                                                        </option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Size selection -->
+                                                <div class="subtitle-option">
+                                                    <label>Size</label>
+                                                    <select (change)="handleSubtitleSizeChange($event)">
+                                                        <option *ngFor="let size of subtitleSizeOptions"
+                                                            [value]="size.value"
+                                                            [selected]="size.value === currentSubtitleSize">
+                                                            {{ size.label }}
+                                                        </option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Color picker -->
+                                                <div class="subtitle-option">
+                                                    <label>Text Color</label>
+                                                    <input type="color" [value]="currentSubtitleColor"
+                                                        (change)="handleSubtitleColorChange($event)">
+                                                </div>
+
+                                                <!-- Background toggle and color -->
+                                                <div class="subtitle-option">
+                                                    <label>Background</label>
+                                                    <div class="toggle-switch">
+                                                        <input type="checkbox" [checked]="subtitleBgEnabled"
+                                                            (change)="toggleSubtitleBackground()">
+                                                        <span class="toggle-slider"></span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="subtitle-option" *ngIf="subtitleBgEnabled">
+                                                    <label>Background Color</label>
+                                                    <input type="color" [value]="currentSubtitleBgColor"
+                                                        (change)="handleSubtitleBgColorChange($event)">
+                                                </div>
+
+                                                <!-- Timing adjustments -->
+                                                <div class="subtitle-timing">
+                                                    <label>Timing Adjustment</label>
+                                                    <div class="timing-buttons">
+                                                        <button (click)="adjustSubtitleDelay(-500)"
+                                                            title="Subtitle Earlier">-0.5s</button>
+                                                        <button (click)="adjustSubtitleDelay(-100)"
+                                                            title="Subtitle Slightly Earlier">-0.1s</button>
+                                                        <span class="delay-display">{{ subtitleDelayMs }}ms</span>
+                                                        <button (click)="adjustSubtitleDelay(100)"
+                                                            title="Subtitle Slightly Later">+0.1s</button>
+                                                        <button (click)="adjustSubtitleDelay(500)"
+                                                            title="Subtitle Later">+0.5s</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Quality Selection -->
                                     <div class="quality-selector">
                                         <button class="control-button" (click)="toggleQualityOptions()"

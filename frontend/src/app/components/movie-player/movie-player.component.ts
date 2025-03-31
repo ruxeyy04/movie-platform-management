@@ -7,13 +7,34 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { TimePipe } from '../../shared/pipes/time.pipe';
-
+import { FormsModule } from '@angular/forms';
+import { NotificationService } from '../../services/notification.service';
 // Quality option interface
 interface QualityOption {
   value: string;
   label: string;
   width: number;
   height: number;
+}
+
+// Subtitle interface
+interface Subtitle {
+  id: number;
+  startTime: number;
+  endTime: number;
+  text: string;
+}
+
+// Subtitle font option interface
+interface SubtitleFontOption {
+  value: string;
+  label: string;
+}
+
+// Subtitle size option interface
+interface SubtitleSizeOption {
+  value: string;
+  label: string;
 }
 
 @Component({
@@ -23,11 +44,13 @@ interface QualityOption {
   standalone: true,
   imports: [
     CommonModule,
-    TimePipe
+    TimePipe,
+    FormsModule
   ]
 })
 export class MoviePlayerComponent implements OnInit, AfterViewInit {
   @ViewChild('videoPlayer') videoPlayerRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('subtitleTrack') subtitleTrackRef!: ElementRef<HTMLTrackElement>;
 
   movie: Movie | null = null;
   loading = true;
@@ -66,6 +89,45 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
   autoQualityLabel: string = '720p HD';
   qualityOptionsVisible: boolean = false;
 
+  // Subtitle options
+  subtitles: Subtitle[] = [];
+  currentSubtitleText: string = '';
+  subtitleFile: File | null = null;
+  subtitleVisible: boolean = true;
+  subtitleOptionsVisible: boolean = false;
+  subtitleDelayMs: number = 0;
+  subtitleLoaded: boolean = false;
+  subtitleFileName: string = '';
+
+  // Subtitle font options
+  subtitleFontOptions: SubtitleFontOption[] = [
+    { value: 'Arial', label: 'Arial' },
+    { value: 'Helvetica', label: 'Helvetica' },
+    { value: 'Times New Roman', label: 'Times New Roman' },
+    { value: 'Courier New', label: 'Courier New' },
+    { value: 'Georgia', label: 'Georgia' },
+    { value: 'Verdana', label: 'Verdana' }
+  ];
+  currentSubtitleFont: string = 'Arial';
+
+  // Subtitle size options
+  subtitleSizeOptions: SubtitleSizeOption[] = [
+    { value: '12px', label: 'Small' },
+    { value: '16px', label: 'Medium' },
+    { value: '20px', label: 'Large' },
+    { value: '24px', label: 'X-Large' },
+    { value: '28px', label: 'XX-Large' },
+    { value: '46px', label: 'XXX-Large' }
+  ];
+  currentSubtitleSize: string = '20px';
+
+  // Subtitle color
+  currentSubtitleColor: string = '#FFFFFF';
+
+  // Subtitle background
+  currentSubtitleBgColor: string = 'rgba(0, 0, 0, 0.5)';
+  subtitleBgEnabled: boolean = true;
+
   videoCurrentTime: number = 0;
 
   private videoElement!: HTMLVideoElement;
@@ -75,7 +137,8 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
     private route: ActivatedRoute,
     private movieService: MovieService,
     private location: Location,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
@@ -371,15 +434,18 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
   }
 
   onTimeUpdate(): void {
-    if (!this.videoElement) return;
+    if (this.videoElement) {
+      this.currentTime = this.videoElement.currentTime;
+      this.progressPercent = (this.currentTime / this.totalDuration) * 100;
 
-    this.currentTime = this.videoElement.currentTime;
-    this.totalDuration = this.videoElement.duration || 0;
-    this.progressPercent = this.totalDuration > 0 ? (this.currentTime / this.totalDuration) * 100 : 0;
+      // Update buffered amount
+      if (this.videoElement.buffered.length > 0) {
+        const bufferedEnd = this.videoElement.buffered.end(this.videoElement.buffered.length - 1);
+        this.bufferedPercent = (bufferedEnd / this.totalDuration) * 100;
+      }
 
-    if (this.videoElement.buffered && this.videoElement.buffered.length > 0) {
-      const bufferedEnd = this.videoElement.buffered.end(this.videoElement.buffered.length - 1);
-      this.bufferedPercent = (bufferedEnd / this.totalDuration) * 100;
+      // Update subtitle text based on current time
+      this.updateCurrentSubtitle();
     }
   }
 
@@ -548,4 +614,276 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
   onFullscreenChange(): void {
     this.isFullscreen = !!document.fullscreenElement;
   }
+
+  // Subtitle methods
+  toggleSubtitleOptions(): void {
+    this.subtitleOptionsVisible = !this.subtitleOptionsVisible;
+    this.speedOptionsVisible = false;
+    this.qualityOptionsVisible = false;
+    this.resetControlsTimeout();
+  }
+
+  toggleSubtitleVisibility(): void {
+    // console.log('toggleSubtitleVisibility called, current value:', this.subtitleVisible);
+    this.subtitleVisible = !this.subtitleVisible;
+    // console.log('New subtitle visibility:', this.subtitleVisible);
+
+    if (this.subtitleVisible && this.subtitles.length > 0) {
+      // Force update subtitle display
+      this.updateCurrentSubtitle();
+      // console.log('Updated subtitle text to:', this.currentSubtitleText);
+    } else {
+      this.currentSubtitleText = '';
+      // console.log('Cleared subtitle text');
+    }
+
+    this.resetControlsTimeout();
+  }
+
+  onSubtitleFileSelected(event: Event): void {
+    const fileInput = event.target as HTMLInputElement;
+    if (fileInput.files && fileInput.files.length > 0) {
+      this.subtitleFile = fileInput.files[0];
+      this.subtitleFileName = this.subtitleFile.name;
+      this.parseSrtFile(this.subtitleFile);
+    }
+  }
+
+  parseSrtFile(file: File): void {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = reader.result as string;
+      this.subtitles = this.parseSrt(content);
+      this.subtitleLoaded = this.subtitles.length > 0;
+      // console.log(`Parsed ${this.subtitles.length} subtitle entries from ${file.name}`);
+
+      // Show initial subtitle based on current time
+      this.updateCurrentSubtitle();
+
+      // Display a feedback message
+      if (this.subtitleLoaded) {
+        this.notificationService.success(`Successfully loaded ${this.subtitles.length} subtitle entries from ${file.name}`);
+      } else {
+        this.notificationService.error('Failed to load subtitles. Please check the format of your .srt file.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  parseSrt(srtContent: string): Subtitle[] {
+    const subtitles: Subtitle[] = [];
+    const blocks = srtContent.replace(/\r/g, '').split('\n\n');
+
+    // console.log(`Found ${blocks.length} subtitle blocks to parse`);
+
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i].trim();
+      if (!block) continue;
+
+      const lines = block.split('\n');
+      if (lines.length < 3) continue;
+
+      const idLine = lines[0].trim();
+      const timeLine = lines[1].trim();
+      const textLines = lines.slice(2);
+
+      const id = parseInt(idLine);
+      if (isNaN(id)) continue;
+
+      const timeMatch = timeLine.match(/(\d{2}):(\d{2}):(\d{2}),(\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2}),(\d{3})/);
+
+      if (timeMatch) {
+        const startHours = parseInt(timeMatch[1]);
+        const startMinutes = parseInt(timeMatch[2]);
+        const startSeconds = parseInt(timeMatch[3]);
+        const startMilliseconds = parseInt(timeMatch[4]);
+
+        const endHours = parseInt(timeMatch[5]);
+        const endMinutes = parseInt(timeMatch[6]);
+        const endSeconds = parseInt(timeMatch[7]);
+        const endMilliseconds = parseInt(timeMatch[8]);
+
+        const startTime = startHours * 3600 + startMinutes * 60 + startSeconds + startMilliseconds / 1000;
+        const endTime = endHours * 3600 + endMinutes * 60 + endSeconds + endMilliseconds / 1000;
+
+        const text = textLines.join(' ').trim();
+
+        subtitles.push({
+          id,
+          startTime,
+          endTime,
+          text
+        });
+      } else {
+        // console.warn(`Could not parse timing in subtitle block ${i + 1}: ${timeLine}`);
+      }
+    }
+
+    // Sort subtitles by start time
+    subtitles.sort((a, b) => a.startTime - b.startTime);
+
+    return subtitles;
+  }
+
+  timeToSeconds(timeString: string): number {
+    try {
+      const [time, ms] = timeString.split(',');
+      const [hours, minutes, seconds] = time.split(':').map(Number);
+      return hours * 3600 + minutes * 60 + seconds + parseInt(ms) / 1000;
+    } catch (error) {
+      console.error('Error parsing time string:', timeString, error);
+      return 0;
+    }
+  }
+
+  updateCurrentSubtitle(): void {
+    if (!this.subtitleVisible || this.subtitles.length === 0) {
+      this.currentSubtitleText = '';
+      return;
+    }
+
+    const currentTimeWithDelay = this.currentTime + (this.subtitleDelayMs / 1000);
+    let found = false;
+
+    // console.log(`Looking for subtitle at time: ${currentTimeWithDelay}s, with ${this.subtitles.length} subtitles loaded`);
+
+    for (const subtitle of this.subtitles) {
+      if (currentTimeWithDelay >= subtitle.startTime && currentTimeWithDelay <= subtitle.endTime) {
+        this.currentSubtitleText = subtitle.text;
+        found = true;
+        // console.log(`Found subtitle: "${subtitle.text}" (${subtitle.startTime}s - ${subtitle.endTime}s)`);
+        break;
+      }
+    }
+
+    if (!found) {
+      this.currentSubtitleText = '';
+    }
+  }
+
+  setSubtitleFont(font: string): void {
+    this.currentSubtitleFont = font;
+  }
+
+  setSubtitleSize(size: string): void {
+    this.currentSubtitleSize = size;
+  }
+
+  setSubtitleColor(color: string): void {
+    this.currentSubtitleColor = color;
+  }
+
+  setSubtitleBgColor(color: string): void {
+    this.currentSubtitleBgColor = color;
+  }
+
+  handleSubtitleFontChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.setSubtitleFont(selectElement.value);
+  }
+
+  handleSubtitleSizeChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.setSubtitleSize(selectElement.value);
+  }
+
+  handleSubtitleColorChange(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    this.setSubtitleColor(inputElement.value);
+  }
+
+  handleSubtitleBgColorChange(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    this.setSubtitleBgColor(inputElement.value);
+  }
+
+  toggleSubtitleBackground(): void {
+    this.subtitleBgEnabled = !this.subtitleBgEnabled;
+  }
+
+  adjustSubtitleDelay(milliseconds: number): void {
+    this.subtitleDelayMs += milliseconds;
+  }
+
+  getSubtitleStyle(): any {
+    return {
+      'font-family': this.currentSubtitleFont,
+      'font-size': this.currentSubtitleSize,
+      'color': this.currentSubtitleColor,
+      'background-color': this.subtitleBgEnabled ? this.currentSubtitleBgColor : 'transparent',
+      'padding': this.subtitleBgEnabled ? '5px 10px' : '0',
+      'border-radius': this.subtitleBgEnabled ? '4px' : '0'
+    };
+  }
+
+  // // Test function to display a subtitle at any time
+  // testSubtitleDisplay(): void {
+  //   if (this.subtitles.length === 0) {
+  //     // Create a test subtitle if none loaded
+  //     this.subtitles = [
+  //       {
+  //         id: 1,
+  //         startTime: 0,
+  //         endTime: 9999,
+  //         text: 'Test subtitle - If you can see this, subtitles are working!'
+  //       }
+  //     ];
+  //     this.subtitleLoaded = true;
+  //     this.subtitleVisible = true;
+  //     this.currentSubtitleText = this.subtitles[0].text;
+  //     console.log('Test subtitle created and displayed');
+
+  //     // Reset after 5 seconds
+  //     setTimeout(() => {
+  //       if (this.subtitles.length === 1 && this.subtitles[0].text.includes('Test subtitle')) {
+  //         this.subtitles = [];
+  //         this.subtitleLoaded = false;
+  //         this.currentSubtitleText = '';
+  //       }
+  //     }, 5000);
+  //   }
+  // }
+
+  // // Force subtitle visibility on/off
+  // forceSubtitleVisibility(visible: boolean): void {
+  //   console.log(`Forcing subtitle visibility: ${visible}`);
+  //   this.subtitleVisible = visible;
+
+  //   if (this.subtitleVisible && this.subtitles.length > 0) {
+  //     this.updateCurrentSubtitle();
+  //   } else {
+  //     this.currentSubtitleText = '';
+  //   }
+  // }
+
+  // // Create an example subtitle for testing
+  // createExampleSubtitle(): void {
+  //   // Create a simple subtitle file with entries spanning the video duration
+  //   if (this.totalDuration > 0) {
+  //     const segmentLength = 10; // Each subtitle lasts 10 seconds
+  //     const subtitles: Subtitle[] = [];
+
+  //     for (let i = 0; i < Math.floor(this.totalDuration / segmentLength); i++) {
+  //       const startTime = i * segmentLength;
+  //       const endTime = (i + 1) * segmentLength;
+
+  //       subtitles.push({
+  //         id: i + 1,
+  //         startTime: startTime,
+  //         endTime: endTime,
+  //         text: `Example subtitle #${i + 1} (${startTime}s - ${endTime}s)`
+  //       });
+  //     }
+
+  //     this.subtitles = subtitles;
+  //     this.subtitleLoaded = true;
+  //     this.subtitleFileName = 'example-subtitle.srt';
+  //     this.subtitleVisible = true;
+  //     this.updateCurrentSubtitle();
+
+  //     this.notificationService.success(`Created ${subtitles.length} example subtitles for testing`);
+  //   } else {
+  //     this.notificationService.error('Cannot create example subtitles until video is loaded');
+  //   }
+  // }
 }
