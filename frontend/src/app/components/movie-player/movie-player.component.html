@@ -54,8 +54,8 @@
 
                         <!-- Subtitle display -->
                         <div *ngIf="subtitleVisible && currentSubtitleText" class="subtitle-container">
-                            <div class="subtitle-text" [ngStyle]="getSubtitleStyle()">
-                                {{ currentSubtitleText }}
+                            <div class="subtitle-text" [ngStyle]="getSubtitleStyle()"
+                                [innerHTML]="sanitizedSubtitleText">
                             </div>
                         </div>
 
@@ -84,11 +84,18 @@
                             [class.hidden]="!controlsVisible">
                             <!-- Progress bar -->
                             <div class="progress-container">
-                                <div class="progress-bar-bg" (click)="onProgressBarClick($event)">
+                                <div class="time-tooltip" [class.visible]="timeTooltipVisible"
+                                    [style.left.%]="timeTooltipPosition">
+                                    {{ timeTooltipText }}
+                                </div>
+                                <div class="progress-bar-bg" (click)="onProgressBarClick($event)"
+                                    (mousemove)="onProgressMouseMove($event)" (mouseleave)="hideTimeTooltip()">
                                     <div class="buffered-bar" [style.width.%]="bufferedPercent"></div>
-                                    <div class="progress-bar" [style.width.%]="progressPercent"></div>
+                                    <div class="progress-bar" [style.width.%]="progressPercent"
+                                        [class.buffering-animation]="isBuffering"></div>
                                     <input type="range" class="seek-slider" min="0" max="100" step="0.1"
                                         [value]="progressPercent" (input)="onSeekBarInput($event)">
+
                                 </div>
                             </div>
 
@@ -120,7 +127,7 @@
                                     </div>
 
                                     <div class="time-display">
-                                        <span>{{ currentTime | time }} / {{ totalDuration | time }}</span>
+                                        <span>{{ currentTime | time }} / {{ totalDuration | time }} </span>
                                     </div>
                                 </div>
 
@@ -145,6 +152,10 @@
                                                     (change)="onSubtitleFileSelected($event)">
                                                 <div *ngIf="subtitleLoaded" class="subtitle-file-info">
                                                     <i class="bi bi-check-circle-fill"></i> {{ subtitleFileName }}
+                                                    <button class="btn-remove-subtitle" (click)="removeSubtitle()"
+                                                        title="Remove Subtitle">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
                                                 </div>
                                             </div>
 
@@ -179,6 +190,14 @@
                                                         [disabled]="!subtitleLoaded">
                                                     <span class="toggle-slider"></span>
                                                 </div>
+                                            </div>
+
+                                            <!-- Remove subtitle button in main controls -->
+                                            <div class="subtitle-action-row" *ngIf="subtitleLoaded">
+                                                <button class="btn-subtitle-action" (click)="removeSubtitle()"
+                                                    title="Remove Subtitle">
+                                                    <i class="bi bi-trash-fill"></i> Remove Subtitle
+                                                </button>
                                             </div>
 
                                             <!-- Subtitle status message -->
@@ -392,4 +411,8 @@
             </div>
         </div>
     </div>
+    <app-confirmation-modal [showModal]="showDeleteModal" title="Remove Subtitle"
+        message="Are you sure you want to remove the subtitle?" (confirm)="confirmRemoveSubtitle()"
+        (cancel)="cancelRemoveSubtitle()">
+    </app-confirmation-modal>
 </div>

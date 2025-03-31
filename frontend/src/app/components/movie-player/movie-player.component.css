@@ -282,6 +282,103 @@
   transition: width 0.2s ease;
 }
 
+/* Time tooltip styles */
+.time-tooltip {
+  position: absolute;
+  bottom: 25px;
+  transform: translateX(-50%) translateY(0);
+  background-color: rgba(0, 0, 0, 0.95);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: monospace;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.time-tooltip.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-5px);
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+}
+
+/* Adjust tooltip positioning at extremes */
+.time-tooltip[style*="left: 2%"].visible {
+  transform: translateX(0) translateY(-5px);
+}
+
+.time-tooltip[style*="left: 98%"].visible {
+  transform: translateX(-100%) translateY(-5px);
+}
+
+.time-tooltip:after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  margin-left: -8px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid rgba(0, 0, 0, 0.95);
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+}
+
+/* Adjust arrow positioning at extremes */
+.time-tooltip[style*="left: 2%"]:after {
+  left: 10px;
+  margin-left: 0;
+}
+
+.time-tooltip[style*="left: 98%"]:after {
+  left: auto;
+  right: 10px;
+  margin-left: 0;
+}
+
+/* Adjust tooltip positioning for high percentages */
+.time-tooltip[style*="left: 9"] {
+  transform: translateX(-90%) translateY(0);
+}
+
+.time-tooltip[style*="left: 9"].visible {
+  transform: translateX(-90%) translateY(-5px);
+}
+
+/* Buffering animation for progress bar */
+.buffering-animation {
+  background-image: linear-gradient(
+    -45deg,
+    rgba(59, 130, 246, 0.6) 25%,
+    rgba(59, 130, 246, 0.9) 25%,
+    rgba(59, 130, 246, 0.9) 50%,
+    rgba(59, 130, 246, 0.6) 50%,
+    rgba(59, 130, 246, 0.6) 75%,
+    rgba(59, 130, 246, 0.9) 75%,
+    rgba(59, 130, 246, 0.9)
+  );
+  background-size: 40px 40px;
+  animation: buffering-stripes 1s linear infinite;
+}
+
+@keyframes buffering-stripes {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 0;
+  }
+}
+
 .progress-bar::after {
   content: "";
   position: absolute;
@@ -700,6 +797,18 @@
   .controls-row {
     margin-top: 8px;
   }
+
+  /* Mobile tooltip adjustments */
+  .time-tooltip {
+    font-size: 10px;
+    padding: 2px 4px;
+    margin-bottom: 5px;
+  }
+
+  /* Ensure progress bar has enough spacing for tooltip */
+  .progress-container {
+    margin-top: 15px;
+  }
 }
 
 /* Time display */
@@ -1081,6 +1190,38 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* Subtitle HTML tag styling */
+.subtitle-text b,
+.subtitle-text strong {
+  font-weight: bold;
+}
+
+.subtitle-text i,
+.subtitle-text em {
+  font-style: italic;
+}
+
+.subtitle-text u {
+  text-decoration: underline;
+}
+
+.subtitle-text span[style] {
+  display: inline !important;
+}
+
+/* Support for common subtitle styling classes */
+.subtitle-text .bold {
+  font-weight: bold;
+}
+
+.subtitle-text .italic {
+  font-style: italic;
+}
+
+.subtitle-text .underline {
+  text-decoration: underline;
+}
+
 /* Subtitle indicator */
 .subtitle-indicator {
   position: absolute;
@@ -1097,6 +1238,7 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Subtitle file info with remove button */
 .subtitle-file-info {
   font-size: 12px;
   color: #4caf50;
@@ -1104,12 +1246,121 @@
   display: flex;
   align-items: center;
   gap: 5px;
+  position: relative;
 }
 
 .subtitle-file-info i {
   font-size: 14px;
 }
 
+.btn-remove-subtitle {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  padding: 5px;
+  cursor: pointer;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-subtitle:hover {
+  color: #e74c3c;
+  background-color: rgba(231, 76, 60, 0.2);
+  transform: scale(1.1);
+}
+
+/* Enhanced button hover effects */
+.subtitle-upload-label {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #e50914;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.subtitle-upload-label:hover {
+  background-color: #f40612;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.subtitle-upload-label:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.btn-clear-filter {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.1rem;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 50%;
+}
+
+.btn-clear-filter:hover {
+  color: var(--primary-color);
+  transform: scale(1.1);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Timing buttons hover effects */
+.timing-buttons button {
+  background-color: rgba(60, 60, 65, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.timing-buttons button:hover {
+  background-color: rgba(90, 90, 95, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.timing-buttons button:active {
+  transform: translateY(0);
+}
+
+/* Control buttons hover effects */
+.control-button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.3rem;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.control-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.control-button:active {
+  transform: scale(1);
+}
+
+/* Subtitle status message */
 .subtitle-status-message {
   padding: 10px;
   background-color: rgba(60, 60, 65, 0.5);
@@ -1426,4 +1677,43 @@ input:checked + .toggle-slider:before {
 
 .subtitle-toggle-btn i {
   font-size: 14px;
+}
+
+/* Subtitle action button row */
+.subtitle-action-row {
+  margin: 12px 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-subtitle-action {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #fff;
+  border: 1px solid rgba(220, 53, 69, 0.4);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.btn-subtitle-action:hover {
+  background-color: rgba(220, 53, 69, 0.4);
+  border-color: rgba(220, 53, 69, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-subtitle-action:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-subtitle-action i {
+  font-size: 16px;
 }

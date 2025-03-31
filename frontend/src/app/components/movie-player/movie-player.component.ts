@@ -4,11 +4,12 @@ import { Movie } from '../../models/movie.model';
 import { MovieService } from '../../services/movie.service';
 import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { TimePipe } from '../../shared/pipes/time.pipe';
 import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../services/notification.service';
+import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
 // Quality option interface
 interface QualityOption {
   value: string;
@@ -45,7 +46,8 @@ interface SubtitleSizeOption {
   imports: [
     CommonModule,
     TimePipe,
-    FormsModule
+    FormsModule,
+    ConfirmationModalComponent
   ]
 })
 export class MoviePlayerComponent implements OnInit, AfterViewInit {
@@ -58,7 +60,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
   youtubeVideoUrl: SafeResourceUrl | null = null;
   mediaBaseUrl = environment.MEDIA_URL;
   backendUrl = environment.BACKEND_URL;
-
+  showDeleteModal = false;
   // Custom video player properties
   isPlaying: boolean = false;
   isMuted: boolean = false;
@@ -92,6 +94,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
   // Subtitle options
   subtitles: Subtitle[] = [];
   currentSubtitleText: string = '';
+  sanitizedSubtitleText: SafeHtml = '';
   subtitleFile: File | null = null;
   subtitleVisible: boolean = true;
   subtitleOptionsVisible: boolean = false;
@@ -132,6 +135,11 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
 
   private videoElement!: HTMLVideoElement;
   private bufferingTimeoutId: any = null;
+
+  // Time tooltip properties
+  timeTooltipVisible: boolean = false;
+  timeTooltipPosition: number = 0;
+  timeTooltipText: string = '0:00';
 
   constructor(
     private route: ActivatedRoute,
@@ -217,10 +225,21 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
         clearTimeout(this.bufferingTimeoutId);
       }
 
+      // Set buffering immediately when video is stalled
+      this.isBuffering = true;
+
       this.bufferingTimeoutId = setTimeout(() => {
-        this.isBuffering = true;
+        // Update UI to show buffering state
+        if (this.videoElement) {
+          // Make sure controls stay visible during buffering
+          this.showControls();
+
+          // Reset any controls timeout
+          this.resetControlsTimeout();
+        }
+
         // console.log('Video is buffering');
-      }, 300); // Show buffering indicator after 300ms of waiting
+      }, 100); // Shorter delay for buffering indicator
     } else {
       if (this.bufferingTimeoutId) {
         clearTimeout(this.bufferingTimeoutId);
@@ -228,7 +247,60 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
       }
 
       this.isBuffering = false;
+
+      // If playing, start the controls hide timer again
+      if (this.isPlaying && this.controlsVisible) {
+        this.hideControlsWithDelay();
+      }
+
       // console.log('Video buffering ended');
+    }
+  }
+
+  // Additional method to check buffering state
+  checkBufferingState(): void {
+    if (!this.videoElement) return;
+
+    // Get current time and buffered data
+    const currentTime = this.videoElement.currentTime;
+    const buffered = this.videoElement.buffered;
+
+    // Check if we have buffered data
+    if (buffered.length > 0) {
+      // Check if current time is within a buffered range
+      let isWithinBufferedRange = false;
+
+      for (let i = 0; i < buffered.length; i++) {
+        if (currentTime >= buffered.start(i) && currentTime <= buffered.end(i)) {
+          isWithinBufferedRange = true;
+          break;
+        }
+      }
+
+      // If not within a buffered range, video may be stalled
+      if (!isWithinBufferedRange) {
+        this.onVideoBuffering(true);
+      }
+    }
+  }
+
+  // Update method to periodically check buffering
+  onTimeUpdate(): void {
+    if (this.videoElement) {
+      this.currentTime = this.videoElement.currentTime;
+      this.progressPercent = (this.currentTime / this.totalDuration) * 100;
+
+      // Update buffered amount
+      if (this.videoElement.buffered.length > 0) {
+        const bufferedEnd = this.videoElement.buffered.end(this.videoElement.buffered.length - 1);
+        this.bufferedPercent = (bufferedEnd / this.totalDuration) * 100;
+
+        // Check if we need to show buffering state
+        this.checkBufferingState();
+      }
+
+      // Update subtitle text based on current time
+      this.updateCurrentSubtitle();
     }
   }
 
@@ -433,22 +505,6 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onTimeUpdate(): void {
-    if (this.videoElement) {
-      this.currentTime = this.videoElement.currentTime;
-      this.progressPercent = (this.currentTime / this.totalDuration) * 100;
-
-      // Update buffered amount
-      if (this.videoElement.buffered.length > 0) {
-        const bufferedEnd = this.videoElement.buffered.end(this.videoElement.buffered.length - 1);
-        this.bufferedPercent = (bufferedEnd / this.totalDuration) * 100;
-      }
-
-      // Update subtitle text based on current time
-      this.updateCurrentSubtitle();
-    }
-  }
-
   onVideoLoaded(): void {
     if (!this.videoElement) {
       this.checkAndInitPlayer();
@@ -463,6 +519,45 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
     this.isPlaying = false;
     this.controlsVisible = true;
   }
+
+  // Handle mouse movement over progress bar
+  onProgressMouseMove(event: MouseEvent): void {
+    const progressBar = event.currentTarget as HTMLElement;
+    const rect = progressBar.getBoundingClientRect();
+
+    // Allow tooltip to reach the full range of the progress bar
+    const position = (event.clientX - rect.left) / rect.width;
+
+    // Calculate time at position
+    const timeAtPosition = position * this.totalDuration;
+
+    // Format time for display
+    const hours = Math.floor(timeAtPosition / 3600);
+    const minutes = Math.floor((timeAtPosition % 3600) / 60);
+    const seconds = Math.floor(timeAtPosition % 60);
+
+    // Create time string
+    let timeString = '';
+    if (hours > 0) {
+      timeString = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Calculate position for tooltip with full range (0-100%)
+    // Constrain just enough to prevent visual clipping
+    this.timeTooltipPosition = Math.max(2, Math.min(98, position * 100));
+
+    // Set tooltip text and make it visible
+    this.timeTooltipText = timeString;
+    this.timeTooltipVisible = true;
+  }
+
+  // Hide time tooltip
+  hideTimeTooltip(): void {
+    this.timeTooltipVisible = false;
+  }
+
   onProgressBarClick(event: MouseEvent): void {
     if (!this.videoElement) {
       console.error('Video element not available for seeking');
@@ -471,14 +566,18 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
 
     const progressBar = event.currentTarget as HTMLElement;
     const rect = progressBar.getBoundingClientRect();
+
+    // Calculate exact click position without constraints
     const clickPosition = (event.clientX - rect.left) / rect.width;
-    const seekTo = clickPosition * this.totalDuration;
+
+    // Ensure the position is between 0 and 1
+    const clampedPosition = Math.max(0, Math.min(1, clickPosition));
+
+    const seekTo = clampedPosition * this.totalDuration;
 
     try {
       this.onVideoBuffering(true);
-
       this.videoElement.currentTime = seekTo;
-      // console.log('Clicked on progress bar. Seeking to:', seekTo);
     } catch (error) {
       console.error('Error seeking via progress bar click:', error);
     }
@@ -634,6 +733,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
       // console.log('Updated subtitle text to:', this.currentSubtitleText);
     } else {
       this.currentSubtitleText = '';
+      this.sanitizedSubtitleText = '';
       // console.log('Cleared subtitle text');
     }
 
@@ -655,14 +755,12 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
       const content = reader.result as string;
       this.subtitles = this.parseSrt(content);
       this.subtitleLoaded = this.subtitles.length > 0;
-      // console.log(`Parsed ${this.subtitles.length} subtitle entries from ${file.name}`);
 
-      // Show initial subtitle based on current time
       this.updateCurrentSubtitle();
 
-      // Display a feedback message
       if (this.subtitleLoaded) {
         this.notificationService.success(`Successfully loaded ${this.subtitles.length} subtitle entries from ${file.name}`);
+
       } else {
         this.notificationService.error('Failed to load subtitles. Please check the format of your .srt file.');
       }
@@ -673,8 +771,6 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
   parseSrt(srtContent: string): Subtitle[] {
     const subtitles: Subtitle[] = [];
     const blocks = srtContent.replace(/\r/g, '').split('\n\n');
-
-    // console.log(`Found ${blocks.length} subtitle blocks to parse`);
 
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i].trim();
@@ -706,7 +802,11 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
         const startTime = startHours * 3600 + startMinutes * 60 + startSeconds + startMilliseconds / 1000;
         const endTime = endHours * 3600 + endMinutes * 60 + endSeconds + endMilliseconds / 1000;
 
-        const text = textLines.join(' ').trim();
+        // Join lines with <br> tags and preserve any existing HTML
+        let text = textLines.join('<br>').trim();
+
+        // Process special formatting from various subtitle formats
+        text = this.processSubtitleFormatting(text);
 
         subtitles.push({
           id,
@@ -714,8 +814,6 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
           endTime,
           text
         });
-      } else {
-        // console.warn(`Could not parse timing in subtitle block ${i + 1}: ${timeLine}`);
       }
     }
 
@@ -723,6 +821,40 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
     subtitles.sort((a, b) => a.startTime - b.startTime);
 
     return subtitles;
+  }
+
+  private processSubtitleFormatting(text: string): string {
+    text = text
+      .replace(/{y:i}/g, '<i>')
+      .replace(/{\/y:i}/g, '</i>')
+      .replace(/{y:b}/g, '<b>')
+      .replace(/{\/y:b}/g, '</b>')
+      .replace(/{y:u}/g, '<u>')
+      .replace(/{\/y:u}/g, '</u>');
+
+    text = text.replace(/{c:([^}]+)}/g, '<span style="color:$1">');
+    text = text.replace(/{\/c}/g, '</span>');
+
+    text = text.replace(/\[([^\]]+)\]/g, '<i>[$1]</i>');
+
+    text = text.replace(/{fs:([^}]+)}/g, '<span style="font-size:$1">');
+    text = text.replace(/{\/fs}/g, '</span>');
+
+    // Handle ASS/SSA style tags
+    text = text.replace(/\\i1/g, '<i>');
+    text = text.replace(/\\i0/g, '</i>');
+    text = text.replace(/\\b1/g, '<b>');
+    text = text.replace(/\\b0/g, '</b>');
+    text = text.replace(/\\u1/g, '<u>');
+    text = text.replace(/\\u0/g, '</u>');
+
+    text = text.replace(/\([^\)]+\:([^\)]+)\)/g, '<i>($1)</i>');
+
+    if (text.includes('<font') && !text.includes('</font>')) {
+      text = text.replace(/<font/g, '<span').replace(/>/g, '>');
+    }
+
+    return text;
   }
 
   timeToSeconds(timeString: string): number {
@@ -739,25 +871,25 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
   updateCurrentSubtitle(): void {
     if (!this.subtitleVisible || this.subtitles.length === 0) {
       this.currentSubtitleText = '';
+      this.sanitizedSubtitleText = '';
       return;
     }
 
     const currentTimeWithDelay = this.currentTime + (this.subtitleDelayMs / 1000);
     let found = false;
 
-    // console.log(`Looking for subtitle at time: ${currentTimeWithDelay}s, with ${this.subtitles.length} subtitles loaded`);
-
     for (const subtitle of this.subtitles) {
       if (currentTimeWithDelay >= subtitle.startTime && currentTimeWithDelay <= subtitle.endTime) {
         this.currentSubtitleText = subtitle.text;
+        this.sanitizedSubtitleText = this.sanitizer.bypassSecurityTrustHtml(subtitle.text);
         found = true;
-        // console.log(`Found subtitle: "${subtitle.text}" (${subtitle.startTime}s - ${subtitle.endTime}s)`);
         break;
       }
     }
 
     if (!found) {
       this.currentSubtitleText = '';
+      this.sanitizedSubtitleText = '';
     }
   }
 
@@ -816,74 +948,28 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
     };
   }
 
-  // // Test function to display a subtitle at any time
-  // testSubtitleDisplay(): void {
-  //   if (this.subtitles.length === 0) {
-  //     // Create a test subtitle if none loaded
-  //     this.subtitles = [
-  //       {
-  //         id: 1,
-  //         startTime: 0,
-  //         endTime: 9999,
-  //         text: 'Test subtitle - If you can see this, subtitles are working!'
-  //       }
-  //     ];
-  //     this.subtitleLoaded = true;
-  //     this.subtitleVisible = true;
-  //     this.currentSubtitleText = this.subtitles[0].text;
-  //     console.log('Test subtitle created and displayed');
+  // Remove loaded subtitle with confirmation
+  removeSubtitle(): void {
+    this.showDeleteModal = true;
+  }
 
-  //     // Reset after 5 seconds
-  //     setTimeout(() => {
-  //       if (this.subtitles.length === 1 && this.subtitles[0].text.includes('Test subtitle')) {
-  //         this.subtitles = [];
-  //         this.subtitleLoaded = false;
-  //         this.currentSubtitleText = '';
-  //       }
-  //     }, 5000);
-  //   }
-  // }
+  confirmRemoveSubtitle(): void {
+    this.showDeleteModal = false;
+    this.subtitles = [];
+    this.subtitleFile = null;
+    this.subtitleFileName = '';
+    this.subtitleLoaded = false;
+    this.currentSubtitleText = '';
+    this.sanitizedSubtitleText = '';
+    this.subtitleDelayMs = 0;
 
-  // // Force subtitle visibility on/off
-  // forceSubtitleVisibility(visible: boolean): void {
-  //   console.log(`Forcing subtitle visibility: ${visible}`);
-  //   this.subtitleVisible = visible;
+    // Reset visibility to default
+    this.subtitleVisible = true;
 
-  //   if (this.subtitleVisible && this.subtitles.length > 0) {
-  //     this.updateCurrentSubtitle();
-  //   } else {
-  //     this.currentSubtitleText = '';
-  //   }
-  // }
+    this.notificationService.info('Subtitle has been removed');
+  }
 
-  // // Create an example subtitle for testing
-  // createExampleSubtitle(): void {
-  //   // Create a simple subtitle file with entries spanning the video duration
-  //   if (this.totalDuration > 0) {
-  //     const segmentLength = 10; // Each subtitle lasts 10 seconds
-  //     const subtitles: Subtitle[] = [];
-
-  //     for (let i = 0; i < Math.floor(this.totalDuration / segmentLength); i++) {
-  //       const startTime = i * segmentLength;
-  //       const endTime = (i + 1) * segmentLength;
-
-  //       subtitles.push({
-  //         id: i + 1,
-  //         startTime: startTime,
-  //         endTime: endTime,
-  //         text: `Example subtitle #${i + 1} (${startTime}s - ${endTime}s)`
-  //       });
-  //     }
-
-  //     this.subtitles = subtitles;
-  //     this.subtitleLoaded = true;
-  //     this.subtitleFileName = 'example-subtitle.srt';
-  //     this.subtitleVisible = true;
-  //     this.updateCurrentSubtitle();
-
-  //     this.notificationService.success(`Created ${subtitles.length} example subtitles for testing`);
-  //   } else {
-  //     this.notificationService.error('Cannot create example subtitles until video is loaded');
-  //   }
-  // }
+  cancelRemoveSubtitle(): void {
+    this.showDeleteModal = false;
+  }
 }
