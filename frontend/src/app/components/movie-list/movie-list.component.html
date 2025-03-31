@@ -106,6 +106,17 @@
             [class.is-filtering]="isFiltering">
             <div *ngFor="let movie of movies" class="netflix-movie-item" [class.fade-in]="!isFiltering">
                 <div class="netflix-movie-card">
+                    <!-- Movie Info Panel (visible on hover) -->
+                    <div class="movie-info-panel d-sm-block d-none">
+                        <div class="movie-header">
+                            <h4 class="movie-header-title">{{ movie.title }}</h4>
+                            <div class="movie-header-meta">
+                                <span class="movie-header-year">{{ movie.releaseYear }}</span>
+                                <span class="movie-header-duration">{{ movie.duration }}m</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="movie-poster">
                         <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'" loading="lazy">
                         <div class="movie-rating-badge">{{ movie.rating }}</div>
@@ -119,17 +130,20 @@
                             <!-- Primary Controls -->
                             <div class="controls-row">
                                 <a *ngIf="movie.releaseDate !== null" [routerLink]="['/movies', movie.id, 'play']"
-                                    class="btn-circle btn-play">
+                                    class="btn-circle btn-play" title="Play">
                                     <i class="bi bi-play-fill"></i>
                                 </a>
                                 <div *ngIf="!movie.releaseDate || movie.releaseDate === null"
                                     class="btn-circle btn-coming-soon" title="Coming Soon">
                                     <i class="bi bi-hourglass-split"></i>
                                 </div>
-                                <div [routerLink]="['/movies', movie.id]" class="btn-circle btn-info"
-                                    (click)="$event.stopPropagation()">
+                                <a [routerLink]="['/movies', movie.id]" class="btn-circle btn-info" title="More Info">
                                     <i class="bi bi-info-circle"></i>
-                                </div>
+                                </a>
+                                <!-- <a *ngIf="movie.releaseDate !== null" [routerLink]="['/movies', movie.id, 'play']"
+                                    class="btn-circle btn-add" title="Add to My List">
+                                    <i class="bi bi-plus-lg"></i>
+                                </a> -->
                                 <div class="expand-control"
                                     (click)="toggleMovieActions(movie); $event.stopPropagation()">
                                     <i class="bi bi-chevron-down"></i>
@@ -146,9 +160,9 @@
 
                                 <!-- Genres -->
                                 <div class="movie-genres-overlay">
-                                    <span *ngFor="let genre of movie.genre?.slice(0, 2); let i = index"
+                                    <span *ngFor="let genre of movie.genre?.slice(0, 3); let i = index; let last = last"
                                         class="genre-badge">
-                                        {{ genre }}{{ i < 1 && movie.genre && movie.genre.length> 1 ? ' • ' : '' }}
+                                        {{ genre }}{{ !last ? ' • ' : '' }}
                                     </span>
                                 </div>
                             </div>
