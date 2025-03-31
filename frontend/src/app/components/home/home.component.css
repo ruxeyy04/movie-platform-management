@@ -32,10 +32,12 @@
 }
 
 .netflix-title {
+  color: var(--primary-color);
   font-size: 3rem;
   font-weight: 900;
-  margin-bottom: 20px;
-  color: var(--primary-color);
+  letter-spacing: -1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
 }
 
 .netflix-subtitle {

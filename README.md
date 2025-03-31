@@ -2,6 +2,8 @@
 
 A full-stack web application for managing and streaming movies with a Netflix-style interface. The application allows users to browse, search, view details, and play movies with a custom video player supporting YouTube videos and local media.
 
+![Homepage](screenshots/homepage.png)
+
 ## Features
 
 - Netflix-style user interface with hover effects and responsive design
