@@ -178,33 +178,80 @@
             </div>
         </div>
 
-        <div class="container mt-4">
-            <div class="now-playing-info">
+        <div class="container">
+            <div class="details-content">
                 <div class="row">
-                    <div class="col-md-4">
-                        <div class="poster-thumbnail">
-                            <img [src]="movie.posterUploadFile_url ? getFullMediaUrl(movie.posterUploadFile_url) : movie.posterUrl"
-                                [alt]="movie.title + ' poster'" class="img-fluid rounded shadow">
+                    <div class="col-lg-4 col-md-5">
+                        <div class="poster-container">
+                            <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'" class="main-poster">
+
+                            <div class="rating-badge-large">
+                                <span class="rating-value">{{ movie.rating }}</span>
+                                <span class="rating-max">/10</span>
+                            </div>
+
+                            <div class="release-status-badge" *ngIf="movie.releaseDate === null">
+                                COMING SOON
+                            </div>
                         </div>
+
                     </div>
-                    <div class="col-md-8">
-                        <h2 class="playing-title-full">
-                            {{ movie.title }}
-                            <span class="playing-year">({{ movie.releaseYear }})</span>
-                        </h2>
-                        <div class="movie-metadata">
-                            <span class="release-date">{{ formatReleaseDate(movie.releaseDate) }}</span>
-                            <span class="separator">•</span>
-                            <span class="duration">{{ movie.duration }} min</span>
-                            <span class="separator">•</span>
-                            <span class="rating"><i class="bi bi-star-fill text-warning me-1"></i>{{ movie.rating
-                                }}/10</span>
+
+                    <div class="col-lg-8 col-md-7">
+                        <div class="details-info">
+                            <h1 class="movie-title">{{ movie.title }} <span class="movie-year">({{ movie.releaseYear
+                                    }})</span></h1>
+
+                            <div class="movie-metadata">
+                                <span class="release-date">{{ formatDate(movie.releaseDate) }}</span>
+                                <span class="separator">•</span>
+                                <span class="duration">{{ movie.duration }} min</span>
+                                <span class="separator">•</span>
+                                <span class="rating">{{ movie.rating }}/10</span>
+                            </div>
+
+                            <div class="genres-container">
+                                <span *ngFor="let genre of movie.genre" class="genre-pill">{{ genre }}</span>
+                            </div>
+
+                            <div class="synopsis">
+                                <h3>Synopsis</h3>
+                                <p>{{ movie.description }}</p>
+                            </div>
+
+                            <div class="director-info">
+                                <h3>Director</h3>
+                                <p>{{ movie.director }}</p>
+                            </div>
+
+                            <div class="technical-details">
+                                <h3>Details</h3>
+                                <table class="details-table">
+                                    <tbody>
+                                        <tr>
+                                            <td>Release Year</td>
+                                            <td>{{ movie.releaseYear }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Release Date</td>
+                                            <td>{{ formatDate(movie.releaseDate) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Duration</td>
+                                            <td>{{ movie.duration }} minutes</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rating</td>
+                                            <td>{{ movie.rating }} / 10</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Genres</td>
+                                            <td>{{ movie.genre.join(', ') }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div class="genres-container">
-                            <span *ngFor="let genre of movie.genres" class="genre-pill">{{ genre.name }}</span>
-                        </div>
-                        <p class="synopsis">{{ movie.description }}</p>
-                        <p class="director"><strong>Director:</strong> {{ movie.director }}</p>
                     </div>
                 </div>
             </div>

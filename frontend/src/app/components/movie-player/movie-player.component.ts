@@ -475,7 +475,18 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
     this.speedOptionsVisible = false;
     // console.log('Playback speed set to:', speed);
   }
+  formatDate(dateString: string | Date | null): string {
+    if (!dateString) {
+      return 'Coming Soon';
+    }
 
+    const date = dateString instanceof Date ? dateString : new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
   skipBackward(): void {
     if (!this.videoElement) return;
 
