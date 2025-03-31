@@ -126,8 +126,8 @@ class FileUploadView(View):
             if file_type == 'poster' and file.size > 10 * 1024 * 1024:  # 10MB
                 return JsonResponse({'error': 'Poster file size must be less than 10MB'}, status=400)
             
-            if file_type == 'video' and file.size > 1024 * 1024 * 1024:  # 1GB
-                return JsonResponse({'error': 'Video file size must be less than 1GB'}, status=400)
+            if file_type == 'video' and file.size > 4096 * 1024 * 1024:  # 4GB
+                return JsonResponse({'error': 'Video file size must be less than 4GB'}, status=400)
             
             custom_filename = request.POST.get('filename')
             

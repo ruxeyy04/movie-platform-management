@@ -278,11 +278,12 @@
                                 <!-- URL Input (shown when URL is selected) -->
                                 <div *ngIf="useVideoUrl" class="video-url-input">
                                     <div class="form-group">
-                                        <label for="videoUrl" class="form-label">Video URL</label>
+                                        <label for="videoUrl" class="form-label">YouTube Video URL (Trailers)</label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="bi bi-film"></i></span>
                                             <input type="url" id="videoUrl" class="form-control"
-                                                formControlName="videoUrl" placeholder="https://example.com/movie.mp4"
+                                                formControlName="videoUrl"
+                                                placeholder="https://www.youtube.com/watch?v=(id)"
                                                 [ngClass]="{'is-invalid': movieForm.get('videoUrl')?.invalid && movieForm.get('videoUrl')?.touched}">
                                         </div>
                                         <div class="invalid-feedback"
@@ -291,9 +292,10 @@
                                         </div>
                                         <div class="invalid-feedback"
                                             *ngIf="movieForm.get('videoUrl')?.errors?.['pattern']">
-                                            Please enter a valid URL starting with http:// or https://
+                                            Please enter a valid URL starting with https://www.youtube.com/watch?v=(id)
                                         </div>
-                                        <small class="form-text text-muted">Enter a direct URL to the video file</small>
+                                        <small class="form-text text-muted">Enter a YouTube URL to the video file (Note:
+                                            Only YouTube URL is supported)</small>
                                     </div>
                                 </div>
 

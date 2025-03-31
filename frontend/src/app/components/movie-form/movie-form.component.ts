@@ -89,7 +89,7 @@ export class MovieFormComponent implements OnInit, OnDestroy {
 
   // Set file size limits (in bytes)
   readonly MAX_POSTER_SIZE = 10 * 1024 * 1024; // 10MB
-  readonly MAX_VIDEO_SIZE = 1024 * 1024 * 1024; // 1GB
+  readonly MAX_VIDEO_SIZE = 4096 * 1024 * 1024; // 1GB
 
   // File size formatting helper
   formatFileSize(bytes: number): string {

@@ -4,4 +4,4 @@ django-cors-headers
 django-redis
 Pillow
 redis
-"redis[hiredis]"
+redis[hiredis]
