@@ -4,7 +4,7 @@ import { catchError, map, finalize } from 'rxjs/operators';
 import axios, { AxiosError } from 'axios';
 import { environment } from '../../environments/environment';
 
-import { GENRES } from './mock-series';
+import { GENRES } from './mock-genre';
 import { Genre } from '../models/genre.model';
 
 // Pagination interface

@@ -286,6 +286,47 @@ The application will be available at `http://localhost:4200/`.
 - Upload subtitles for local videos (SRT format)
 - Movie Platofmr Management can create, update, or delete movies
 
+## Mock Data
+
+The application includes mock data for movies and genres to help with development and testing:
+
+### Using Mock Data
+
+1. Mock data configuration is located in `frontend/src/environments/environment.ts`:
+
+```typescript
+export const environment = {
+  production: false,
+  // ... other settings
+
+  // Mock data settings
+  USE_MOCK_MOVIES: false, // Set to true to use mock data instead of API
+  USE_MOCK_GENRES: false, // Set to true to use mock data instead of API
+};
+```
+
+2. By default, mock data is disabled (set to `false`), and the application will use the real backend API.
+
+3. To use mock data for development or testing:
+
+   - Set `USE_MOCK_MOVIES` to `true` to use sample movie data
+   - Set `USE_MOCK_GENRES` to `true` to use sample genre data
+   - This allows you to explore the application with predefined data without requiring a functioning backend
+
+4. Mock data files are located at:
+
+   - Movies: `frontend/src/app/services/mock-movies.ts`
+   - Genres: `frontend/src/app/services/mock-genres.ts`
+
+5. You can modify these files to add or customize sample data during development.
+
+### Benefits of Mock Data
+
+- Develop frontend without requiring a running backend
+- Test different scenarios with predictable data
+- Faster development iterations with instant responses
+- Work offline without backend connectivity
+
 ## Troubleshooting
 
 - If Redis connection fails, ensure the Docker container is running.
