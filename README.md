@@ -240,9 +240,11 @@ npm install
 
 ## Running the Application
 
-### Backend
+### Redis (Required First)
 
-1. Make sure Redis is running:
+> **IMPORTANT**: Redis must be running before starting the backend server. The Django application depends on Redis for caching, session management, and background tasks.
+
+1. Verify if Redis is already running:
 
 ```bash
 docker ps
@@ -252,6 +254,24 @@ docker ps
 
 ```bash
 docker run --name django-redis -d -p 6379:6379 --rm redis
+```
+
+3. Confirm Redis is running and accessible:
+
+```bash
+docker exec -it django-redis redis-cli ping
+```
+
+This should return `PONG` if Redis is running properly.
+
+### Backend
+
+1. Make sure Redis is running (see above).
+
+2. Navigate to the backend directory:
+
+```bash
+cd backend
 ```
 
 3. Start the Django development server:
@@ -329,6 +349,85 @@ export const environment = {
 
 ## Troubleshooting
 
+- Redis issues:
+  - Error "Connection refused" when starting backend: Redis is not running
+  - Error "MISCONF Redis is configured to save RDB snapshots": Run `docker exec -it django-redis redis-cli config set stop-writes-on-bgsave-error no`
+  - If Redis data is inconsistent, you can reset it with `docker restart django-redis`
+  - For persistent Redis data, use a volume mount instead of the --rm flag
 - If Redis connection fails, ensure the Docker container is running.
 - Check browser console for any frontend errors.
 - If you encounter issues with Angular CLI, try updating it using `npm update -g @angular/cli`
+- YouTube playback issues:
+  - Ensure you're using a valid YouTube URL (youtube.com or youtu.be)
+  - If you encounter CORS errors, check that the YouTube video allows embedding
+  - Try using the privacy-enhanced YouTube URL format (youtube-nocookie.com)
+- Database migration issues:
+  - Run `python manage.py makemigrations` before running `migrate` if tables are missing
+  - If migration conflicts occur, try `python manage.py migrate --fake-initial`
+- Authentication problems:
+  - Verify admin credentials match between Django admin and environment.ts
+  - Check browser cookies and local storage for stale tokens
+  - Try clearing your browser cache and cookies
+- Media file upload issues:
+  - Ensure the media directory exists and has proper permissions
+  - Check file size limits in both frontend and backend code
+  - Verify supported file formats (.mp4, .webm for videos, .jpg/.png for images)
+- Performance problems:
+  - Use mock data during development to reduce server load
+  - Consider reducing video quality settings for better streaming performance
+  - Check network conditions and server resources
+
+## Version Compatibility
+
+While the application specifies certain versions in the prerequisites, it may work with other versions as well. Here's detailed information about version compatibility:
+
+### Python
+
+- **Required**: v3.13+ (specified in prerequisites)
+- **Recommended**: v3.13.0 or v3.13.1
+- **Also tested with**: v3.10+, v3.11+, v3.12+
+- **Known issues**:
+  - Python 3.9 and below may not support some of the modern syntax used
+  - Python 3.14+ (prerelease) hasn't been tested extensively
+
+### Node.js
+
+- **Required**: v23+ (specified in prerequisites)
+- **Recommended**: v23.0.0 or higher
+- **Also tested with**: v20+ (LTS)
+- **Known issues**:
+  - Node.js below v18 may have compatibility issues with some packages
+  - Using the latest LTS version is recommended for production environments
+
+### Angular
+
+- **Required**: Angular 17+
+- **Recommended**: Angular 17.0.0 or later
+- **Also tested with**: Angular 16 (with some package adjustments)
+- **Installation**: `npm install -g @angular/cli@17`
+
+### Docker
+
+- **Required**: Any recent version of Docker
+- **Recommended**: Docker Desktop 4.x+
+- **Also tested with**: Docker Engine 24+
+
+### Redis
+
+- **Required**: Redis 6.0+ (via Docker)
+- **Recommended**: Redis 7.0+
+- **Default configuration**: Running in ephemeral mode (data clears on container restart)
+- **Port**: 6379 (default)
+- **Notes**: The application uses Redis for caching and session management; all backend operations depend on Redis being available
+
+### Django & Django REST Framework
+
+- **Django**: 5.0+
+- **Django REST Framework**: 3.14+
+
+If you encounter version-related issues, consider:
+
+1. Updating to the recommended versions listed above
+2. Checking package-lock.json or requirements.txt for specific dependency version constraints
+3. Reviewing the error logs for incompatibility messages
+4. Using a version manager like nvm (for Node.js) or pyenv (for Python) to maintain multiple versions
