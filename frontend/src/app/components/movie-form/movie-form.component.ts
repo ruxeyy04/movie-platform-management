@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MovieService } from '../../services/movie.service';
@@ -147,7 +147,7 @@ export class MovieFormComponent implements OnInit, OnDestroy {
       duration: ['', [Validators.required, Validators.min(1), Validators.max(600)]],
       rating: ['', [Validators.required, Validators.min(0), Validators.max(10)]],
       posterUrl: [''],
-      videoUrl: [''],
+      videoUrl: ['', [this.youtubeUrlValidator]],
       posterUploadFile_url: [''],
       videoUploadFile_url: ['']
     });
@@ -183,13 +183,11 @@ export class MovieFormComponent implements OnInit, OnDestroy {
 
   updateVideoValidators(): void {
     const videoUrlControl = this.movieForm.get('videoUrl');
-
     if (this.useVideoUrl) {
-      videoUrlControl?.setValidators([Validators.required, Validators.pattern(/^https?:\/\/.+/)]);
+      videoUrlControl?.setValidators([Validators.required, this.youtubeUrlValidator]);
     } else {
       videoUrlControl?.clearValidators();
     }
-
     videoUrlControl?.updateValueAndValidity();
   }
 
@@ -748,5 +746,23 @@ export class MovieFormComponent implements OnInit, OnDestroy {
     });
 
     this.subscriptions.push(genreSub);
+  }
+
+  youtubeUrlValidator = (control: AbstractControl): ValidationErrors | null => {
+    const url = control.value;
+    if (url && !this.isValidYoutubeUrl(url)) {
+      return { invalidYoutubeUrl: true };
+    }
+    return null;
+  }
+
+  isValidYoutubeUrl(url: string): boolean {
+    try {
+      const validUrl = new URL(url);
+      const host = validUrl.hostname;
+      return host === 'www.youtube.com' || host === 'youtube.com' || host === 'youtu.be';
+    } catch {
+      return false;
+    }
   }
 }

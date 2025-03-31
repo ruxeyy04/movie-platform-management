@@ -291,11 +291,11 @@
                                             Video URL is required.
                                         </div>
                                         <div class="invalid-feedback"
-                                            *ngIf="movieForm.get('videoUrl')?.errors?.['pattern']">
-                                            Please enter a valid URL starting with https://www.youtube.com/watch?v=(id)
+                                            *ngIf="movieForm.get('videoUrl')?.errors?.['invalidYoutubeUrl']">
+                                            Please enter a valid YouTube URL (youtube.com or youtu.be).
                                         </div>
-                                        <small class="form-text text-muted">Enter a YouTube URL to the video file (Note:
-                                            Only YouTube URL is supported)</small>
+                                        <small class="form-text text-muted">Enter a YouTube URL to the video file. Only
+                                            URLs from youtube.com or youtu.be are accepted.</small>
                                     </div>
                                 </div>
 

@@ -373,7 +373,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           // Load similar movies
           this.getSimilarMovies(movie);
 
-          if (movie.videoUrl && movie.videoUrl.includes('youtube')) {
+          if (movie.videoUrl && (movie.videoUrl.includes('youtube') || movie.videoUrl.includes('youtu.be'))) {
             this.prepareYoutubeUrl(movie.videoUrl);
           }
 
