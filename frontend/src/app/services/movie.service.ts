@@ -26,10 +26,12 @@ export class MovieService {
     // Loading state subjects
     private loadingList = new BehaviorSubject<boolean>(false);
     private loadingDelete = new BehaviorSubject<boolean>(false);
+    private loadingSearch = new BehaviorSubject<boolean>(false);
 
     // Observable streams
     listLoading$ = this.loadingList.asObservable();
     deleteLoading$ = this.loadingDelete.asObservable();
+    searchLoading$ = this.loadingSearch.asObservable();
 
     constructor(
         private fileUploadService: FileUploadService
@@ -58,6 +60,59 @@ export class MovieService {
                 }),
                 catchError(this.handleError),
                 finalize(() => this.loadingList.next(false))
+            );
+    }
+
+    searchMovies(query: string, page: number = 1): Observable<PaginatedResponse<Movie>> {
+        if (this.useMock) {
+            // For mock data, perform local filtering
+            const filteredMovies = MOVIES.filter(movie =>
+                movie.title.toLowerCase().includes(query.toLowerCase()) ||
+                movie.director?.toLowerCase().includes(query.toLowerCase()) ||
+                movie.genre?.some(g => g.toLowerCase().includes(query.toLowerCase()))
+            );
+
+            const mockResponse: PaginatedResponse<Movie> = {
+                count: filteredMovies.length,
+                next: null,
+                previous: null,
+                results: [...filteredMovies]
+            };
+            return of(mockResponse);
+        }
+
+        this.loadingSearch.next(true);
+
+        return from(axios.get<PaginatedResponse<Movie>>(`${this.apiUrl}?search=${encodeURIComponent(query)}&page=${page}`, this.axiosConfig))
+            .pipe(
+                map(response => {
+                    const data = response.data;
+                    data.results = data.results.map(movie => this.transformMovieUrls(movie));
+                    return data;
+                }),
+                catchError(this.handleError),
+                finalize(() => this.loadingSearch.next(false))
+            );
+    }
+
+    getSearchSuggestions(query: string, limit: number = 5): Observable<Movie[]> {
+        if (this.useMock) {
+            const filteredMovies = MOVIES.filter(movie =>
+                movie.title.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, limit);
+
+            return of(filteredMovies);
+        }
+
+        return from(axios.get<PaginatedResponse<Movie>>(`${this.apiUrl}?search=${encodeURIComponent(query)}&limit=${limit}`, this.axiosConfig))
+            .pipe(
+                map(response => {
+                    return response.data.results.map(movie => this.transformMovieUrls(movie));
+                }),
+                catchError(error => {
+                    console.error('Error fetching search suggestions:', error);
+                    return of([]);
+                })
             );
     }
 
