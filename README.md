@@ -401,10 +401,8 @@ While the application specifies certain versions in the prerequisites, it may wo
 
 ### Angular
 
-- **Required**: Angular 17+
-- **Recommended**: Angular 17.0.0 or later
-- **Also tested with**: Angular 16 (with some package adjustments)
-- **Installation**: `npm install -g @angular/cli@17`
+- **Required**: Angular v19
+- **Installation**: `npm install -g @angular/cli`
 
 ### Docker
 
