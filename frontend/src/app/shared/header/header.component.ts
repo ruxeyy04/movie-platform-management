@@ -25,6 +25,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   // Search suggestions
   suggestions: Movie[] = [];
   showSuggestions = false;
+  searchLoading = false;
   private searchSubscription: Subscription | null = null;
   private routeSubscription: Subscription | null = null;
 
@@ -46,11 +47,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
         debounceTime(300),
         distinctUntilChanged(),
         filter(value => !!value && value.length >= 2), // Only search if at least 2 characters
-        switchMap(value => this.movieService.getSearchSuggestions(value || ''))
+        switchMap(value => {
+          this.searchLoading = true; // Show loading indicator
+          return this.movieService.getSearchSuggestions(value || '');
+        })
       )
-      .subscribe(results => {
-        this.suggestions = results;
-        this.showSuggestions = results.length > 0;
+      .subscribe({
+        next: (results) => {
+          this.suggestions = results;
+          this.showSuggestions = results.length > 0;
+          this.searchLoading = false; // Hide loading indicator
+        },
+        error: (error) => {
+          console.error('Error fetching search suggestions:', error);
+          this.searchLoading = false; // Hide loading indicator on error
+        }
       });
 
     // Listen for route changes to update the search control value
@@ -132,10 +143,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const query = this.searchControl.value;
 
     if (query) {
+      this.searchLoading = true; // Show loading indicator
+
       // Navigate to movies page with search query
-      this.router.navigate(['/movies'], { queryParams: { search: query } });
-      this.searchActive = false;
-      this.showSuggestions = false;
+      this.router.navigate(['/movies'], { queryParams: { search: query } })
+        .then(() => {
+          // Hide indicators after navigation completes
+          this.searchActive = false;
+          this.showSuggestions = false;
+          this.searchLoading = false;
+        })
+        .catch(error => {
+          console.error('Navigation error:', error);
+          this.searchLoading = false;
+        });
     }
   }
 

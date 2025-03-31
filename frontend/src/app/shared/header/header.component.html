@@ -42,6 +42,13 @@
                             placeholder="Search titles, genres..." [formControl]="searchControl"
                             (focus)="onSearchFocus()" (blur)="onSearchBlur()" (keyup)="onSearchInput()">
 
+                        <!-- Search loading indicator -->
+                        <div class="search-loading-indicator" *ngIf="searchLoading">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+
                         <!-- Search Suggestions Dropdown -->
                         <div class="search-suggestions d-sm-block d-none"
                             [class.visible]="showSuggestions && suggestions.length > 0">
@@ -101,6 +108,13 @@
                         <button type="submit" class="mobile-search-button">
                             <i class="bi bi-search"></i>
                         </button>
+
+                        <!-- Mobile search loading indicator -->
+                        <div class="mobile-search-loading-indicator" *ngIf="searchLoading">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
 
                         <!-- Mobile Search Suggestions -->
                         <div class="search-suggestions" [class.visible]="showSuggestions && suggestions.length > 0">
