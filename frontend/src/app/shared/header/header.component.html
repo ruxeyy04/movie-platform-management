@@ -39,7 +39,30 @@
                             <i class="bi bi-search"></i>
                         </button>
                         <input type="search" class="search-input" [class.active]="searchActive"
-                            placeholder="Search titles, genres..." [formControl]="searchControl">
+                            placeholder="Search titles, genres..." [formControl]="searchControl"
+                            (focus)="onSearchFocus()" (blur)="onSearchBlur()" (keyup)="onSearchInput()">
+
+                        <!-- Search Suggestions Dropdown -->
+                        <div class="search-suggestions d-sm-block d-none"
+                            [class.visible]="showSuggestions && suggestions.length > 0">
+                            <div class="suggestions-list">
+                                <div *ngFor="let movie of suggestions" class="suggestion-item"
+                                    (mousedown)="goToMovieDetails(movie)">
+                                    <div class="suggestion-poster" *ngIf="movie.posterUrl">
+                                        <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'">
+                                    </div>
+                                    <div class="suggestion-info">
+                                        <div class="suggestion-title">{{ movie.title }}</div>
+                                        <div class="suggestion-meta">
+                                            <span class="suggestion-year" *ngIf="movie.releaseYear">{{ movie.releaseYear
+                                                }}</span>
+                                            <span class="suggestion-rating" *ngIf="movie.rating">{{ movie.rating
+                                                }}/10</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </div>
 
@@ -73,10 +96,32 @@
                 <li class="mobile-nav-item">
                     <form (submit)="handleSearch($event)" class="mobile-search-form">
                         <input type="search" class="form-control" placeholder="Search movies..."
-                            [formControl]="searchControl">
+                            [formControl]="searchControl" (focus)="onSearchFocus()" (blur)="onSearchBlur()"
+                            (keyup)="onSearchInput()">
                         <button type="submit" class="mobile-search-button">
                             <i class="bi bi-search"></i>
                         </button>
+
+                        <!-- Mobile Search Suggestions -->
+                        <div class="search-suggestions" [class.visible]="showSuggestions && suggestions.length > 0">
+                            <div class="suggestions-list">
+                                <div *ngFor="let movie of suggestions" class="suggestion-item"
+                                    (mousedown)="goToMovieDetails(movie)">
+                                    <div class="suggestion-poster" *ngIf="movie.posterUrl">
+                                        <img [src]="movie.posterUrl" [alt]="movie.title + ' poster'">
+                                    </div>
+                                    <div class="suggestion-info">
+                                        <div class="suggestion-title">{{ movie.title }}</div>
+                                        <div class="suggestion-meta">
+                                            <span class="suggestion-year" *ngIf="movie.releaseYear">{{ movie.releaseYear
+                                                }}</span>
+                                            <span class="suggestion-rating" *ngIf="movie.rating">{{ movie.rating
+                                                }}/10</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </li>
             </ul>

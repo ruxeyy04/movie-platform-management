@@ -97,7 +97,7 @@
 }
 
 .nav-link.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -5px;
   left: 0;
@@ -110,7 +110,7 @@
 }
 
 .nav-link:not(.active)::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -5px;
   left: 0;
@@ -171,13 +171,151 @@
   margin-right: 15px;
 }
 
+/* Responsive search input */
+@media (max-width: 768px) {
+  .search-input.active {
+    width: 180px;
+    right: 35px;
+  }
+
+  .search-toggle {
+    z-index: 10;
+  }
+}
+
 .search-input:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.2);
 }
 
+/* Search Suggestions */
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  right: 15px;
+  width: 280px;
+  background-color: rgba(20, 20, 20, 0.95);
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  margin-top: 5px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1100;
+  max-height: 400px;
+  overflow-y: auto;
+}
 
+.search-suggestions.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.suggestions-list {
+  padding: 10px 0;
+}
+
+.suggestion-item {
+  display: flex;
+  padding: 8px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(20, 20, 20, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.suggestion-poster {
+  width: 40px;
+  height: 60px;
+  overflow: hidden;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.suggestion-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.suggestion-info {
+  flex-grow: 1;
+}
+
+.suggestion-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: white;
+}
+
+.suggestion-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.suggestion-year {
+  color: #46d369;
+}
+
+.suggestion-rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Mobile adjustments for search suggestions */
+@media (max-width: 768px) {
+  .search-suggestions {
+    width: 100%;
+    left: 0;
+    right: 0;
+    max-height: 300px;
+    position: fixed;
+    top: 70px;
+    margin-top: 0;
+    z-index: 1200;
+  }
+
+  .search-input.active {
+    width: 200px;
+  }
+
+  /* Improved mobile search display */
+  .mobile-nav-item .search-suggestions {
+    top: auto;
+    position: absolute;
+    margin-top: 5px;
+  }
+
+  /* Mobile form suggestions */
+  .mobile-search-form {
+    position: relative;
+  }
+
+  .mobile-search-form .search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+}
 
 .netflix-menu-button {
   background: transparent;
@@ -287,8 +425,6 @@
   .netflix-logo-text {
     font-size: 22px;
   }
-  
-
 }
 
 .cursor-pointer {

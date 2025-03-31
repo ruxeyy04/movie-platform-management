@@ -1,8 +1,11 @@
 import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, HostListener } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs/operators';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { MovieService } from '../../services/movie.service';
+import { Movie } from '../../models/movie.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -19,7 +22,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isBrowser: boolean;
   isScrolled = false;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: object, private router: Router) {
+  // Search suggestions
+  suggestions: Movie[] = [];
+  showSuggestions = false;
+  private searchSubscription: Subscription | null = null;
+  private routeSubscription: Subscription | null = null;
+
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: object,
+    private router: Router,
+    private movieService: MovieService
+  ) {
     // Check if running in the browser
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
@@ -27,27 +40,77 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.onWindowScroll();
 
-    this.searchControl.valueChanges
+    // Set up search input with debounce
+    this.searchSubscription = this.searchControl.valueChanges
       .pipe(
         debounceTime(300),
-        distinctUntilChanged()
+        distinctUntilChanged(),
+        filter(value => !!value && value.length >= 2), // Only search if at least 2 characters
+        switchMap(value => this.movieService.getSearchSuggestions(value || ''))
       )
-      .subscribe(value => {
-        console.log('Search query:', value);
-        // Implement search functionality here
+      .subscribe(results => {
+        this.suggestions = results;
+        this.showSuggestions = results.length > 0;
+      });
+
+    // Listen for route changes to update the search control value
+    this.routeSubscription = this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd)
+      )
+      .subscribe(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchParam = urlParams.get('search');
+
+        if (searchParam) {
+          this.searchControl.setValue(searchParam, { emitEvent: false });
+        } else if (!this.router.url.includes('/movies?search=')) {
+          // Only clear if we're not on a search page
+          this.searchControl.setValue('', { emitEvent: false });
+        }
       });
   }
 
   ngOnDestroy(): void {
-    // No need for explicit event handler cleanup with @HostListener
+    // Clean up subscriptions
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
+
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
   }
 
   toggleSearch(): void {
     this.searchActive = !this.searchActive;
+    if (this.searchActive) {
+      setTimeout(() => {
+        const searchInput = document.querySelector('.search-input') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }, 100);
+    } else {
+      this.showSuggestions = false;
+    }
   }
 
   toggleMobileMenu(): void {
     this.showMobileMenu = !this.showMobileMenu;
+
+    // When opening mobile menu, focus the search input after a short delay
+    if (this.showMobileMenu) {
+      setTimeout(() => {
+        const mobileSearchInput = document.querySelector('.mobile-search-form input') as HTMLInputElement;
+        if (mobileSearchInput) {
+          // Clear any existing value
+          this.searchControl.setValue('', { emitEvent: false });
+          this.suggestions = [];
+          this.showSuggestions = false;
+        }
+      }, 300);
+    }
   }
 
   @HostListener('window:scroll')
@@ -57,15 +120,51 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.isScrolled = window.scrollY > 20;
   }
 
+  @HostListener('window:keydown.enter')
+  onEnterKeyPressed(): void {
+    if (this.searchControl.value) {
+      this.handleSearch(new Event('submit'));
+    }
+  }
+
   handleSearch(event: Event): void {
     event.preventDefault();
     const query = this.searchControl.value;
-    console.log('Search submitted:', query);
-    // Implement search functionality here
 
     if (query) {
-      // Navigate to search results or filter current view
+      // Navigate to movies page with search query
+      this.router.navigate(['/movies'], { queryParams: { search: query } });
       this.searchActive = false;
+      this.showSuggestions = false;
+    }
+  }
+
+  onSearchFocus(): void {
+    if (this.searchControl.value && this.suggestions.length > 0) {
+      this.showSuggestions = true;
+    }
+  }
+
+  onSearchBlur(): void {
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 200);
+  }
+
+  onSearchInput(): void {
+    const query = this.searchControl.value;
+    if (!query) {
+      this.showSuggestions = false;
+      this.suggestions = [];
+    }
+  }
+
+  goToMovieDetails(movie: Movie): void {
+    if (movie && movie.id) {
+      this.router.navigate(['/movies', movie.id]);
+      this.searchActive = false;
+      this.showSuggestions = false;
+      this.searchControl.setValue('');
     }
   }
 
