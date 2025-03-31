@@ -41,14 +41,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.onWindowScroll();
 
-    // Set up search input with debounce
     this.searchSubscription = this.searchControl.valueChanges
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
-        filter(value => !!value && value.length >= 2), // Only search if at least 2 characters
+        filter(value => !!value && value.length >= 2),
         switchMap(value => {
-          this.searchLoading = true; // Show loading indicator
+          this.searchLoading = true;
           return this.movieService.getSearchSuggestions(value || '');
         })
       )
@@ -56,11 +55,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
         next: (results) => {
           this.suggestions = results;
           this.showSuggestions = results.length > 0;
-          this.searchLoading = false; // Hide loading indicator
+          this.searchLoading = false;
         },
         error: (error) => {
           console.error('Error fetching search suggestions:', error);
-          this.searchLoading = false; // Hide loading indicator on error
+          this.searchLoading = false;
         }
       });
 
@@ -143,12 +142,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const query = this.searchControl.value;
 
     if (query) {
-      this.searchLoading = true; // Show loading indicator
+      this.searchLoading = true;
 
-      // Navigate to movies page with search query
       this.router.navigate(['/movies'], { queryParams: { search: query } })
         .then(() => {
-          // Hide indicators after navigation completes
           this.searchActive = false;
           this.showSuggestions = false;
           this.searchLoading = false;

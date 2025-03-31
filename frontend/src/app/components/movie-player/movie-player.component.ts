@@ -69,6 +69,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   loading = true;
   error = false;
   youtubeVideoUrl: SafeResourceUrl | null = null;
+  youtubeLoadError = false;
   mediaBaseUrl = environment.MEDIA_URL;
   backendUrl = environment.BACKEND_URL;
   showDeleteModal = false;
@@ -416,9 +417,23 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (videoId) {
-      const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&enablejsapi=0&origin=${encodeURIComponent(window.location.origin)}&widget_referrer=${encodeURIComponent(window.location.origin)}&autoplay=0`;
+
       this.youtubeVideoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+      this.youtubeLoadError = false;
+
+      console.log('YouTube embed URL created:', embedUrl);
+    } else {
+      console.error('Could not extract YouTube video ID from URL:', url);
+      this.youtubeLoadError = true;
     }
+  }
+
+
+  handleYoutubeError(event: Event): void {
+    console.error('YouTube iframe loading error:', event);
+    this.youtubeLoadError = true;
+    this.notificationService.error('Failed to load YouTube video. The video may be unavailable or have restricted embedding.');
   }
 
   goBack(): void {
@@ -1035,6 +1050,7 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loading = true;
     this.error = false;
     this.youtubeVideoUrl = null;
+    this.youtubeLoadError = false;
     this.similarMovies = [];
 
     this.isPlaying = false;
