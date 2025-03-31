@@ -1,15 +1,17 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, HostListener, OnDestroy, Renderer2 } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Movie } from '../../models/movie.model';
 import { MovieService } from '../../services/movie.service';
-import { Location } from '@angular/common';
-import { CommonModule } from '@angular/common';
+import { Location, CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { TimePipe } from '../../shared/pipes/time.pipe';
 import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../services/notification.service';
 import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
+import { finalize } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+
 // Quality option interface
 interface QualityOption {
   value: string;
@@ -38,6 +40,14 @@ interface SubtitleSizeOption {
   label: string;
 }
 
+// Subtitle test data and methods
+interface SubtitleCue {
+  id: number;
+  startTime: number;
+  endTime: number;
+  text: string;
+}
+
 @Component({
   selector: 'app-movie-player',
   templateUrl: './movie-player.component.html',
@@ -47,10 +57,11 @@ interface SubtitleSizeOption {
     CommonModule,
     TimePipe,
     FormsModule,
-    ConfirmationModalComponent
+    ConfirmationModalComponent,
+    RouterLink
   ]
 })
-export class MoviePlayerComponent implements OnInit, AfterViewInit {
+export class MoviePlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('videoPlayer') videoPlayerRef!: ElementRef<HTMLVideoElement>;
   @ViewChild('subtitleTrack') subtitleTrackRef!: ElementRef<HTMLTrackElement>;
 
@@ -141,6 +152,16 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
   timeTooltipPosition: number = 0;
   timeTooltipText: string = '0:00';
 
+  // Subtitle test data and methods
+  subtitleTestData: SubtitleCue[] = [];
+
+  // Similar movies
+  similarMovies: Movie[] = [];
+  loadingSimilar = false;
+
+  // Track subscriptions for cleanup
+  private routeSubscription: Subscription | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private movieService: MovieService,
@@ -151,6 +172,18 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.getMovie();
+
+    // Listen for route changes to handle navigation between different movies
+    this.route.paramMap.subscribe(params => {
+      const id = Number(params.get('id'));
+      if (!isNaN(id)) {
+        // Only reload if the ID has changed and we're not in initial load
+        if (this.movie && this.movie.id !== id) {
+          this.resetPlayer();
+          this.loadMovie(id);
+        }
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -327,11 +360,17 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    this.loadMovie(id);
+  }
+
+  loadMovie(id: number): void {
     this.movieService.getMovie(id)
       .subscribe({
         next: (movie) => {
           this.movie = movie;
           this.loading = false;
+          // Load similar movies
+          this.getSimilarMovies(movie);
 
           if (movie.videoUrl && movie.videoUrl.includes('youtube')) {
             this.prepareYoutubeUrl(movie.videoUrl);
@@ -345,6 +384,24 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
           console.error('Error fetching movie for playback', err);
           this.error = true;
           this.loading = false;
+        }
+      });
+  }
+
+  getSimilarMovies(movie: Movie): void {
+    this.loadingSimilar = true;
+    this.similarMovies = [];
+
+    this.movieService.getSimilarMovies(movie)
+      .pipe(
+        finalize(() => this.loadingSimilar = false)
+      )
+      .subscribe({
+        next: (movies) => {
+          this.similarMovies = movies;
+        },
+        error: (err) => {
+          console.error('Error fetching similar movies', err);
         }
       });
   }
@@ -971,5 +1028,62 @@ export class MoviePlayerComponent implements OnInit, AfterViewInit {
 
   cancelRemoveSubtitle(): void {
     this.showDeleteModal = false;
+  }
+
+  resetPlayer(): void {
+    this.movie = null;
+    this.loading = true;
+    this.error = false;
+    this.youtubeVideoUrl = null;
+    this.similarMovies = [];
+
+    this.isPlaying = false;
+    this.currentTime = 0;
+    this.totalDuration = 0;
+    this.progressPercent = 0;
+    this.bufferedPercent = 0;
+    this.isBuffering = false;
+
+    if (this.controlsTimeoutId) {
+      clearTimeout(this.controlsTimeoutId);
+      this.controlsTimeoutId = null;
+    }
+
+    if (this.bufferingTimeoutId) {
+      clearTimeout(this.bufferingTimeoutId);
+      this.bufferingTimeoutId = null;
+    }
+
+    this.subtitles = [];
+    this.currentSubtitleText = '';
+    this.sanitizedSubtitleText = '';
+    this.subtitleLoaded = false;
+    this.subtitleOptionsVisible = false;
+    this.subtitleVisible = true;
+    this.subtitleDelayMs = 0;
+
+    this.qualityOptionsVisible = false;
+    this.speedOptionsVisible = false;
+    this.currentQuality = 'auto';
+    this.currentPlaybackSpeed = 1.0;
+
+    this.controlsVisible = true;
+
+    // Force scroll to top
+    window.scrollTo(0, 0);
+  }
+
+  ngOnDestroy(): void {
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
+
+    if (this.controlsTimeoutId) {
+      clearTimeout(this.controlsTimeoutId);
+    }
+
+    if (this.bufferingTimeoutId) {
+      clearTimeout(this.bufferingTimeoutId);
+    }
   }
 }

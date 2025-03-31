@@ -1,4 +1,4 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Movie } from '../../models/movie.model';
 import { MovieService } from '../../services/movie.service';
@@ -6,6 +6,8 @@ import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
 import { NotificationService } from '../../services/notification.service';
+import { finalize } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-movie-details',
@@ -15,12 +17,19 @@ import { NotificationService } from '../../services/notification.service';
   imports: [CommonModule, RouterLink, ConfirmationModalComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class MovieDetailsComponent implements OnInit {
+export class MovieDetailsComponent implements OnInit, OnDestroy {
   movie: Movie | null = null;
   loading = true;
   error = false;
   showDeleteModal = false;
   deleteInProgress = false;
+
+  // Similar movies
+  similarMovies: Movie[] = [];
+  loadingSimilar = false;
+
+  // Subscription management
+  private routeSubscription: Subscription | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -31,27 +40,67 @@ export class MovieDetailsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.getMovie();
+    // Subscribe to route parameter changes
+    this.routeSubscription = this.route.paramMap.subscribe(params => {
+      // Reset component state
+      this.movie = null;
+      this.loading = true;
+      this.error = false;
+      this.similarMovies = [];
+
+      // Get movie ID from route parameters
+      const id = Number(params.get('id'));
+      if (isNaN(id)) {
+        this.error = true;
+        this.loading = false;
+        return;
+      }
+
+      // Load movie details with the new ID
+      this.loadMovie(id);
+    });
   }
 
-  getMovie(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (isNaN(id)) {
-      this.error = true;
-      this.loading = false;
-      return;
+  ngOnDestroy(): void {
+    // Clean up subscriptions
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
     }
+  }
 
+  loadMovie(id: number): void {
     this.movieService.getMovie(id)
       .subscribe({
         next: (movie) => {
           this.movie = movie;
           this.loading = false;
+          this.getSimilarMovies(movie);
+
+          window.scrollTo(0, 0);
         },
         error: (err) => {
           console.error('Error fetching movie details', err);
           this.error = true;
           this.loading = false;
+        }
+      });
+  }
+
+  getSimilarMovies(movie: Movie): void {
+    this.loadingSimilar = true;
+    this.similarMovies = []; // Clear any previous recommendations
+
+    this.movieService.getSimilarMovies(movie)
+      .pipe(
+        finalize(() => this.loadingSimilar = false)
+      )
+      .subscribe({
+        next: (movies) => {
+          this.similarMovies = movies;
+        },
+        error: (err) => {
+          console.error('Error fetching similar movies', err);
+          // Don't set error flag, as this is a non-critical feature
         }
       });
   }

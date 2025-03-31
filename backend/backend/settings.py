@@ -15,6 +15,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880000  # 5GB in bytes
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880000  # 5GB in bytes
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -25,14 +27,27 @@ SECRET_KEY = 'django-insecure-j95l4vw$nzw(py5jjke-qot*v&((rg^trjmbis3*xldb$4m*1v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# BASE_URL = 'https://hkr5nwg0-8000.asse.devtunnels.ms'
+
+# Force HTTPS in URL generation
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+
+# USE_X_FORWARDED_HOST = True
+# USE_X_FORWARDED_PROTO = True
+
+# Fix the ALLOWED_HOSTS list (there was a missing comma)
 ALLOWED_HOSTS = [
+    # 'hkr5nwg0-8000.asse.devtunnels.ms',
     'localhost',
     '127.0.0.1',
     '192.168.1.200',
     '192.168.1.200:8000',
     '192.168.1.200:4200',
+    # 'hkr5nwg0-4200.asse.devtunnels.ms'
 ]
-
 
 # Application definition
 
@@ -143,21 +158,44 @@ CACHES = {
 }
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False 
 
 CORS_ALLOWED_ORIGINS = [
+    # 'https://hkr5nwg0-4200.asse.devtunnels.ms', 
     'http://localhost:4200',
     'http://192.168.1.200:4200',
     'http://192.168.1.200:8000',
+    'https://localhost:4200',
+    'https://192.168.1.200:4200',
+    'https://192.168.1.200:8000',
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOW_HEADERS = [
-    "content-type",
-    "authorization",
-    "cache-control",  # Allow this header
-    "pragma",
-    "expires",
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'cache-control',
+    'pragma',
+    'expires',
 ]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',

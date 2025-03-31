@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError, BehaviorSubject, from } from 'rxjs';
+import { Observable, of, throwError, BehaviorSubject, from, forkJoin } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
 import { Movie } from '../models/movie.model';
 import { MOVIES } from './mock-movies';
@@ -210,6 +210,94 @@ export class MovieService {
         if (!url) return 1;
         const match = url.match(/page=(\d+)/);
         return match ? parseInt(match[1], 10) : 1;
+    }
+
+    /**
+     * Get similar movies based on genre match
+     * @param currentMovie The movie to find similar titles for
+     * @param limit Maximum number of movies to return
+     * @returns Observable of similar movies
+     */
+    getSimilarMovies(currentMovie: Movie, limit: number = 6): Observable<Movie[]> {
+        if (this.useMock) {
+            // Use local filtering based on genre match for mock data
+            if (!currentMovie.genre || currentMovie.genre.length === 0) {
+                return of([]); // No genres to match
+            }
+
+            // Filter movies that share at least one genre with the current movie
+            // and exclude the current movie itself
+            const similarMovies = MOVIES.filter(movie =>
+                movie.id !== currentMovie.id &&
+                movie.genre &&
+                movie.genre.some(genre =>
+                    currentMovie.genre!.includes(genre)
+                )
+            );
+
+            // Sort by number of matching genres (most matches first)
+            const sortedSimilar = similarMovies.sort((a, b) => {
+                const aMatches = a.genre!.filter(genre => currentMovie.genre!.includes(genre)).length;
+                const bMatches = b.genre!.filter(genre => currentMovie.genre!.includes(genre)).length;
+                return bMatches - aMatches;
+            });
+
+            return of(sortedSimilar.slice(0, limit));
+        }
+
+        // For production API, fetch and process multiple genres
+        if (!currentMovie.genre || currentMovie.genre.length === 0) {
+            return of([]); // No genres to match
+        }
+
+        // Create an array of observables, one for each genre
+        const genreObservables = currentMovie.genre.map(genre =>
+            from(axios.get<PaginatedResponse<Movie>>(
+                `${this.apiUrl}?genre=${encodeURIComponent(genre)}&limit=${limit * 2}`,
+                this.axiosConfig
+            )).pipe(
+                map(response => response.data.results
+                    .map(movie => this.transformMovieUrls(movie))
+                ),
+                catchError(() => of([]))
+            )
+        );
+
+        // Combine all results and process
+        return forkJoin(genreObservables).pipe(
+            map(resultsArray => {
+                // Flatten array of arrays
+                const allResults = resultsArray.flat();
+
+                // Remove duplicates and current movie
+                const movieMap = new Map<number, { movie: Movie, matchCount: number }>();
+
+                allResults.forEach(movie => {
+                    if (!movie.id || movie.id === currentMovie.id) return;
+
+                    if (movieMap.has(movie.id)) {
+                        // Increment match count for movies that appear in multiple genre searches
+                        const existing = movieMap.get(movie.id)!;
+                        existing.matchCount += 1;
+                    } else {
+                        movieMap.set(movie.id, {
+                            movie,
+                            matchCount: 1
+                        });
+                    }
+                });
+
+                // Convert map back to array and sort by match count (descending)
+                return Array.from(movieMap.values())
+                    .sort((a, b) => b.matchCount - a.matchCount)
+                    .map(item => item.movie)
+                    .slice(0, limit);
+            }),
+            catchError(error => {
+                console.error('Error fetching similar movies:', error);
+                return of([]);
+            })
+        );
     }
 
     private handleError(error: any) {

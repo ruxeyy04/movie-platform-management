@@ -1717,3 +1717,123 @@ input:checked + .toggle-slider:before {
 .btn-subtitle-action i {
   font-size: 16px;
 }
+
+/* Similar Movies Section */
+.similar-movies-section {
+  background-color: var(--bg-dark);
+  padding: 60px 0;
+  margin-top: 20px;
+}
+
+.section-title {
+  color: var(--text-light);
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 50px;
+  height: 3px;
+  background-color: var(--primary-color);
+}
+
+.similar-movie-card {
+  height: 100%;
+  transition: transform 0.3s ease;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.similar-movie-card:hover {
+  transform: scale(1.08);
+  z-index: 2;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.movie-poster {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 150%; /* 2:3 aspect ratio for posters */
+  overflow: hidden;
+}
+
+.poster-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.movie-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.movie-rating-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  z-index: 2;
+}
+
+.hover-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.similar-movie-card:hover .hover-overlay {
+  opacity: 1;
+}
+
+.hover-title {
+  color: white;
+  font-size: 16px;
+  margin: 0 0 5px;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.hover-genre {
+  color: #ccc;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Enhanced loading spinner for recommendations */
+.similar-movies-section .spinner {
+  margin: 30px auto;
+}
+
+.similar-movies-section .spinner > div {
+  width: 16px;
+  height: 16px;
+  background-color: var(--primary-color);
+}
+
+.similar-movies-section .text-muted {
+  color: #a5a5a5 !important;
+  font-size: 16px;
+}
