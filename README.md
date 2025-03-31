@@ -98,6 +98,21 @@ cd backend
 py manage.py migrate
 ```
 
+8. Create a superuser for accessing the admin interface:
+
+```bash
+py manage.py createsuperuser
+```
+
+Follow the prompts to set a username, email, and password for the superuser account. This account will have full administrative privileges.
+
+Alternatively, you can use the default admin account:
+
+- **Username**: admin
+- **Password**: admin
+
+> **Important**: If you customize the admin account credentials, you must also update these values in the frontend environment configuration file at `frontend/src/environments/environment.ts` to ensure proper authentication.
+
 ### Frontend Setup
 
 1. Navigate to the frontend directory:
